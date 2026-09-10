@@ -81,3 +81,45 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const auth = await getAuthUser(request);
+    if (!auth) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const idParam = searchParams.get("id");
+    if (!idParam) {
+      return NextResponse.json({ message: "ID parameter missing" }, { status: 400 });
+    }
+
+    const id = parseInt(idParam, 10);
+    if (isNaN(id)) {
+      return NextResponse.json({ message: "ID parameter invalid" }, { status: 400 });
+    }
+
+    // Verify ownership
+    const existing = await prisma.perhitungan.findFirst({
+      where: { id, user_id: auth.userId },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ message: "Data tidak ditemukan" }, { status: 404 });
+    }
+
+    await prisma.perhitungan.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ message: "Riwayat berhasil dihapus" }, { status: 200 });
+  } catch (error) {
+    console.error("PERHITUNGAN_DELETE_ERROR:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}
+
