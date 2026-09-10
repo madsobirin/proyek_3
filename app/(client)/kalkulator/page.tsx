@@ -20,6 +20,7 @@ import {
   Scale,
   Lock,
 } from "lucide-react";
+import BMIRiwayatChart, { PerhitunganItem } from "@/components/client/BMIRiwayatChart";
 
 type TargetStatus = "Kurus" | "Normal" | "Berlebih" | "Obesitas";
 
@@ -135,12 +136,28 @@ export default function KalkulatorBMIPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loadingMenus, setLoadingMenus] = useState(false);
+  const [history, setHistory] = useState<PerhitunganItem[]>([]);
+
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch("/api/perhitungan");
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch calculation history:", err);
+    }
+  };
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => {
         setIsLoggedIn(r.ok);
         setAuthChecked(true);
+        if (r.ok) {
+          fetchHistory();
+        }
       })
       .catch(() => {
         setIsLoggedIn(false);
@@ -170,6 +187,8 @@ export default function KalkulatorBMIPage() {
       const data = await res.json();
       if (res.ok) {
         setResult(data);
+        // Refresh history
+        fetchHistory();
         // Fetch menu rekomendasi
         setLoadingMenus(true);
         const menuRes = await fetch(`/api/menus?target=${data.status}`);
@@ -416,6 +435,13 @@ export default function KalkulatorBMIPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Riwayat & Progress Chart ── */}
+        <BMIRiwayatChart
+          history={history}
+          onRefreshHistory={fetchHistory}
+          isLoggedIn={isLoggedIn}
+        />
 
         {/* ── Kategori BMI ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
