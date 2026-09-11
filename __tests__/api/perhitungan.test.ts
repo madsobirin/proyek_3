@@ -122,3 +122,52 @@ describe("Perhitungan input validation logic", () => {
     expect(isValidInput(175, 65)).toBe(true);
   });
 });
+
+// ─── BMR & TDEE Calculation Logic ──────────────────────────────────────────────
+describe("BMR & TDEE Calculation (Mifflin-St Jeor Formula)", () => {
+  function hitungBMRandTDEE(
+    tinggi_cm: number,
+    berat_kg: number,
+    gender: "pria" | "wanita",
+    usia: number,
+    aktivitas: "rebahan" | "ringan" | "sedang" | "berat"
+  ) {
+    let bmr = 10 * berat_kg + 6.25 * tinggi_cm - 5 * usia + (gender === "wanita" ? -161 : 5);
+    bmr = Math.round(bmr);
+
+    let multiplier = 1.55;
+    if (aktivitas === "rebahan") multiplier = 1.2;
+    else if (aktivitas === "ringan") multiplier = 1.375;
+    else if (aktivitas === "sedang") multiplier = 1.55;
+    else if (aktivitas === "berat") multiplier = 1.725;
+
+    const tdee = Math.round(bmr * multiplier);
+    return { bmr, tdee };
+  }
+
+  it("should calculate BMR correctly for Pria (170cm, 65kg, 25th)", () => {
+    // 10*65 + 6.25*170 - 5*25 + 5 = 650 + 1062.5 - 125 + 5 = 1592.5 → 1593
+    const { bmr } = hitungBMRandTDEE(170, 65, "pria", 25, "sedang");
+    expect(bmr).toBe(1593);
+  });
+
+  it("should calculate BMR correctly for Wanita (160cm, 50kg, 25th)", () => {
+    // 10*50 + 6.25*160 - 5*25 - 161 = 500 + 1000 - 125 - 161 = 1214
+    const { bmr } = hitungBMRandTDEE(160, 50, "wanita", 25, "sedang");
+    expect(bmr).toBe(1214);
+  });
+
+  it("should calculate TDEE correctly with activity multiplier", () => {
+    // BMR 1593 * 1.55 (sedang) = 2469.15 → 2469
+    const { bmr, tdee } = hitungBMRandTDEE(170, 65, "pria", 25, "sedang");
+    expect(bmr).toBe(1593);
+    expect(tdee).toBe(2469);
+  });
+
+  it("should apply correct multiplier for rebahan/sedentary activity", () => {
+    // BMR 1593 * 1.2 = 1911.6 → 1912
+    const { tdee } = hitungBMRandTDEE(170, 65, "pria", 25, "rebahan");
+    expect(tdee).toBe(1912);
+  });
+});
+

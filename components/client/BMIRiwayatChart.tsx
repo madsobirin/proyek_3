@@ -22,6 +22,12 @@ export type PerhitunganItem = {
   berat_badan: number;
   bmi: number;
   status: string;
+  gender?: string;
+  usia?: number;
+  aktivitas?: string;
+  bmr?: number;
+  tdee?: number;
+  target_kalori?: number;
   created_at: string;
   updated_at?: string;
 };
@@ -50,21 +56,20 @@ export default function BMIRiwayatChart({
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 
-  // Latest entry (newest)
-  const latestEntry = history.length > 0 ? history[0] : null;
-  // Previous entry (2nd newest)
-  const prevEntry = history.length > 1 ? history[1] : null;
-  // First entry (oldest)
+  // Chronological references (sortedChrono is oldest→newest)
   const oldestEntry = sortedChrono.length > 0 ? sortedChrono[0] : null;
+  const latestEntry = sortedChrono.length > 0 ? sortedChrono[sortedChrono.length - 1] : null;
+  // Previous entry = second-to-last chronologically
+  const prevEntry = sortedChrono.length > 1 ? sortedChrono[sortedChrono.length - 2] : null;
 
-  // Weight changes
+  // Weight changes (correctly computed chronologically)
   const recentDelta =
     latestEntry && prevEntry
       ? parseFloat((latestEntry.berat_badan - prevEntry.berat_badan).toFixed(1))
       : 0;
 
   const totalDelta =
-    latestEntry && oldestEntry && history.length > 1
+    latestEntry && oldestEntry && sortedChrono.length > 1
       ? parseFloat((latestEntry.berat_badan - oldestEntry.berat_badan).toFixed(1))
       : 0;
 
@@ -108,6 +113,31 @@ export default function BMIRiwayatChart({
       });
     } catch {
       return dateStr;
+    }
+  };
+
+  // Format tanggal + jam untuk label X-axis, agar 2 entri pada hari yang sama tetap bisa dibedakan
+  const formatXAxisLabel = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      const date = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+      const time = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", hour12: false });
+      return { date, time };
+    } catch {
+      return { date: dateStr, time: "" };
+    }
+  };
+
+  // Format jam saja untuk tooltip
+  const formatTime = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } catch {
+      return "";
     }
   };
 
@@ -268,12 +298,20 @@ export default function BMIRiwayatChart({
                       : "text-text-light"
                   }`}
                 >
-                  {totalDelta > 0 ? `+${totalDelta}` : totalDelta}
+                  {sortedChrono.length <= 1
+                    ? "—"
+                    : totalDelta > 0
+                    ? `+${totalDelta}`
+                    : totalDelta}
                 </span>
-                <span className="text-xs font-bold text-text-muted">kg</span>
+                {sortedChrono.length > 1 && (
+                  <span className="text-xs font-bold text-text-muted">kg</span>
+                )}
               </div>
               <p className="text-[10px] text-text-muted mt-2">
-                sejak {formatShortDate(oldestEntry?.created_at ?? "")}
+                {sortedChrono.length <= 1
+                  ? "Butuh ≥2 catatan untuk melihat perubahan"
+                  : `Pengukuran pertama → terbaru`}
               </p>
             </div>
 
@@ -297,10 +335,11 @@ export default function BMIRiwayatChart({
 
           {/* Interactive SVG Chart */}
           <div className="bg-background-base/80 border border-card-border rounded-2xl p-4 md:p-6 mb-8 relative">
-            <div className="flex items-center justify-between text-xs text-text-muted font-bold mb-4">
-              <span>Sumbu Y: Berat Badan (kg)</span>
-              <span>Sumbu X: Riwayat Pengukuran</span>
+            <div className="flex items-center justify-between text-xs text-text-muted font-bold mb-1">
+              <span>↑ Berat Badan (kg)</span>
+              <span>Urutan Pengukuran (terlama → terbaru) →</span>
             </div>
+            <p className="text-[10px] text-text-muted/50 mb-4">Klik titik pada grafik untuk melihat detail pengukuran</p>
 
             <div className="relative w-full overflow-x-auto">
               <div className="min-w-[500px]">
@@ -395,18 +434,33 @@ export default function BMIRiwayatChart({
                           stroke="var(--color-primary, #00ff7f)"
                           strokeWidth={isHovered ? "3" : "2.5"}
                         />
-                        {/* Label Date X-Axis */}
-                        <text
-                          x={p.x}
-                          y={height - 8}
-                          fill="currentColor"
-                          className={`text-[9px] font-bold ${
-                            isHovered ? "fill-primary font-black" : "fill-text-muted/60"
-                          }`}
-                          textAnchor="middle"
-                        >
-                          {formatShortDate(p.item.created_at)}
-                        </text>
+                        {/* Label Date + Time X-Axis (2 baris agar sama-hari bisa dibedakan) */}
+                        {(() => {
+                          const { date, time } = formatXAxisLabel(p.item.created_at);
+                          const cls = isHovered ? "fill-primary" : "fill-text-muted/60";
+                          return (
+                            <>
+                              <text
+                                x={p.x}
+                                y={height - 14}
+                                fill="currentColor"
+                                className={`text-[9px] font-bold ${cls}`}
+                                textAnchor="middle"
+                              >
+                                {date}
+                              </text>
+                              <text
+                                x={p.x}
+                                y={height - 3}
+                                fill="currentColor"
+                                className={`text-[8px] ${cls}`}
+                                textAnchor="middle"
+                              >
+                                {time}
+                              </text>
+                            </>
+                          );
+                        })()}
                       </g>
                     );
                   })}
@@ -422,6 +476,10 @@ export default function BMIRiwayatChart({
                   <span className="text-xs font-bold text-text-light flex items-center gap-1.5">
                     <Calendar size={13} className="text-text-muted" />
                     {formatDate(activePoint.item.created_at)}
+                    <span className="text-text-muted font-normal">pukul {formatTime(activePoint.item.created_at)}</span>
+                    <span className="ml-1 text-[10px] text-text-muted/50 font-normal bg-white/5 border border-card-border px-2 py-0.5 rounded-md">
+                      Pengukuran ke-{activePoint.index + 1} dari {points.length}
+                    </span>
                   </span>
                 </div>
                 <div className="flex items-center gap-4 text-xs">
