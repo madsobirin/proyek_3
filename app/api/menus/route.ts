@@ -41,9 +41,22 @@ export async function GET(request: Request) {
       }
     }
 
+    const kaloriMaxParam = searchParams.get("kalori_max");
+    const kaloriMinParam = searchParams.get("kalori_min");
+
+    const kaloriMax = kaloriMaxParam ? parseInt(kaloriMaxParam) : undefined;
+    const kaloriMin = kaloriMinParam ? parseInt(kaloriMinParam) : undefined;
+
     const where = {
       id: idParsed,
       target_status: target ? (target as TargetStatus) : undefined,
+      kalori:
+        (kaloriMax && !isNaN(kaloriMax)) || (kaloriMin && !isNaN(kaloriMin))
+          ? {
+              gte: kaloriMin && !isNaN(kaloriMin) ? kaloriMin : undefined,
+              lte: kaloriMax && !isNaN(kaloriMax) ? kaloriMax : undefined,
+            }
+          : undefined,
     };
 
     // Kalau pakai pagination → pakai skip/take + count

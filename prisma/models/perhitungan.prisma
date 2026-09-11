@@ -1,10 +1,16 @@
 model Perhitungan {
-  id           Int @id @default(autoincrement())
-  user_id      Int
-  tinggi_badan Float
-  berat_badan  Float
-  bmi          Float
-  status       String
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  tinggi_badan  Float
+  berat_badan   Float
+  bmi           Float
+  status        String
+  gender        String?
+  usia          Int?
+  aktivitas     String?
+  bmr           Float?
+  tdee          Float?
+  target_kalori Float?
 
   created_at DateTime? @default(now())
   updated_at DateTime? @updatedAt
@@ -13,3 +19,4 @@ model Perhitungan {
 
   @@map("perhitungan")
 }
+

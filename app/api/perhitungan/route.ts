@@ -5,7 +5,13 @@ import { getAuthUser } from "@/lib/auth";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { tinggi_badan, berat_badan } = body;
+    const {
+      tinggi_badan,
+      berat_badan,
+      gender = "pria",
+      usia = 25,
+      aktivitas = "sedang",
+    } = body;
 
     if (!tinggi_badan || !berat_badan) {
       return NextResponse.json(
@@ -16,6 +22,9 @@ export async function POST(request: Request) {
 
     const tinggi = parseFloat(tinggi_badan);
     const berat = parseFloat(berat_badan);
+    const age = parseInt(String(usia), 10) || 25;
+    const sex = String(gender).toLowerCase() === "wanita" ? "wanita" : "pria";
+    const activityKey = String(aktivitas).toLowerCase();
 
     if (isNaN(tinggi) || isNaN(berat) || tinggi <= 0 || berat <= 0) {
       return NextResponse.json(
@@ -35,6 +44,32 @@ export async function POST(request: Request) {
     else if (bmi < 30) status = "Berlebih";
     else status = "Obesitas";
 
+    // Hitung BMR (Mifflin-St Jeor)
+    let bmr =
+      10 * berat + 6.25 * tinggi - 5 * age + (sex === "wanita" ? -161 : 5);
+    bmr = Math.round(bmr);
+
+    // Multiplier Aktivitas
+    let multiplier = 1.55;
+    if (activityKey === "rebahan" || activityKey === "sedentary")
+      multiplier = 1.2;
+    else if (activityKey === "ringan") multiplier = 1.375;
+    else if (activityKey === "sedang") multiplier = 1.55;
+    else if (activityKey === "berat") multiplier = 1.725;
+
+    const tdee = Math.round(bmr * multiplier);
+
+    // Target Kalori berdasarkan status BMI
+    let target_kalori = tdee;
+    let jenis_target = "Maintenance";
+    if (status === "Berlebih" || status === "Obesitas") {
+      target_kalori = Math.max(1200, tdee - 500);
+      jenis_target = "Defisit Kalori (-500 kkal)";
+    } else if (status === "Kurus") {
+      target_kalori = tdee + 400;
+      jenis_target = "Surplus Kalori (+400 kkal)";
+    }
+
     // Simpan ke DB kalau user login
     const auth = await getAuthUser(request);
     if (auth?.userId) {
@@ -45,11 +80,30 @@ export async function POST(request: Request) {
           berat_badan: berat,
           bmi: bmiRounded,
           status,
+          gender: sex,
+          usia: age,
+          aktivitas: activityKey,
+          bmr,
+          tdee,
+          target_kalori,
         },
       });
     }
 
-    return NextResponse.json({ bmi: bmiRounded, status }, { status: 200 });
+    return NextResponse.json(
+      {
+        bmi: bmiRounded,
+        status,
+        bmr,
+        tdee,
+        target_kalori,
+        jenis_target,
+        gender: sex,
+        usia: age,
+        aktivitas: activityKey,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("PERHITUNGAN_ERROR:", error);
     return NextResponse.json(
@@ -92,12 +146,18 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const idParam = searchParams.get("id");
     if (!idParam) {
-      return NextResponse.json({ message: "ID parameter missing" }, { status: 400 });
+      return NextResponse.json(
+        { message: "ID parameter missing" },
+        { status: 400 },
+      );
     }
 
     const id = parseInt(idParam, 10);
     if (isNaN(id)) {
-      return NextResponse.json({ message: "ID parameter invalid" }, { status: 400 });
+      return NextResponse.json(
+        { message: "ID parameter invalid" },
+        { status: 400 },
+      );
     }
 
     // Verify ownership
@@ -106,14 +166,20 @@ export async function DELETE(request: Request) {
     });
 
     if (!existing) {
-      return NextResponse.json({ message: "Data tidak ditemukan" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Data tidak ditemukan" },
+        { status: 404 },
+      );
     }
 
     await prisma.perhitungan.delete({
       where: { id },
     });
 
-    return NextResponse.json({ message: "Riwayat berhasil dihapus" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Riwayat berhasil dihapus" },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("PERHITUNGAN_DELETE_ERROR:", error);
     return NextResponse.json(
@@ -122,4 +188,3 @@ export async function DELETE(request: Request) {
     );
   }
 }
-
