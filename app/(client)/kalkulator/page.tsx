@@ -18,9 +18,11 @@ import {
   AlertTriangle,
   AlertCircle,
   Scale,
-  Lock,
+  Sparkles,
 } from "lucide-react";
-import BMIRiwayatChart, { PerhitunganItem } from "@/components/client/BMIRiwayatChart";
+import BMIRiwayatChart, {
+  PerhitunganItem,
+} from "@/components/client/BMIRiwayatChart";
 
 type TargetStatus = "Kurus" | "Normal" | "Berlebih" | "Obesitas";
 
@@ -142,7 +144,9 @@ export default function KalkulatorBMIPage() {
   const [tinggi, setTinggi] = useState(170);
   const [berat, setBerat] = useState(65);
   const [usia, setUsia] = useState(25);
-  const [aktivitas, setAktivitas] = useState<"rebahan" | "ringan" | "sedang" | "berat">("sedang");
+  const [aktivitas, setAktivitas] = useState<
+    "rebahan" | "ringan" | "sedang" | "berat"
+  >("sedang");
   const [result, setResult] = useState<BMIResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [menus, setMenus] = useState<Menu[]>([]);
@@ -150,7 +154,9 @@ export default function KalkulatorBMIPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loadingMenus, setLoadingMenus] = useState(false);
   const [history, setHistory] = useState<PerhitunganItem[]>([]);
-  const [mealTab, setMealTab] = useState<"semua" | "sarapan" | "siang" | "malam">("semua");
+  const [mealTab, setMealTab] = useState<
+    "semua" | "sarapan" | "siang" | "malam"
+  >("semua");
 
   const fetchHistory = async () => {
     try {
@@ -207,8 +213,10 @@ export default function KalkulatorBMIPage() {
       const data = await res.json();
       if (res.ok) {
         setResult(data);
-        // Refresh history
-        fetchHistory();
+        // Refresh history hanya jika user login
+        if (isLoggedIn) {
+          fetchHistory();
+        }
         // Fetch menu rekomendasi
         setLoadingMenus(true);
         const menuRes = await fetch(`/api/menus?target=${data.status}`);
@@ -228,35 +236,6 @@ export default function KalkulatorBMIPage() {
 
   return (
     <div className="min-h-screen bg-background-base">
-      {authChecked && !isLoggedIn && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 backdrop-blur-md bg-background-dark/60" />
-          <div className="relative z-10 bg-card-dark border border-card-border rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-5">
-              <Lock size={28} className="text-primary" />
-            </div>
-            <h2 className="text-xl font-black text-text-light mb-2">
-              Akses Terbatas
-            </h2>
-            <p className="text-text-muted text-sm leading-relaxed mb-6">
-              Silakan login atau daftar akun FitLife terlebih dahulu untuk
-              menggunakan fitur Kalkulator BMI kami.
-            </p>
-            <Link
-              href="/login"
-              className="block w-full bg-primary hover:bg-primary-hover text-background-dark font-black py-3.5 rounded-2xl text-sm transition-all shadow-[0_0_20px_rgba(0,255,127,0.4)] hover:shadow-[0_0_30px_rgba(0,255,127,0.6)] mb-3"
-            >
-              Masuk / Daftar Sekarang
-            </Link>
-            <button
-              onClick={() => router.push("/")}
-              className="w-full text-text-muted text-sm font-bold hover:text-text-light transition-colors py-2"
-            >
-              Kembali ke Beranda
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Hero */}
       <section className="relative bg-background-dark pt-14 pb-16 border-b border-card-border overflow-hidden">
@@ -374,7 +353,9 @@ export default function KalkulatorBMIPage() {
                 <p className="text-sm font-bold text-text-muted">Usia</p>
                 <span className="text-2xl font-black text-primary">
                   {usia}{" "}
-                  <span className="text-xs text-text-muted font-bold">Tahun</span>
+                  <span className="text-xs text-text-muted font-bold">
+                    Tahun
+                  </span>
                 </span>
               </div>
               <input
@@ -410,7 +391,9 @@ export default function KalkulatorBMIPage() {
                         : "border-card-border bg-background-base/40 text-text-muted hover:border-primary/40 hover:text-text-light"
                     }`}
                   >
-                    <span className="font-bold text-text-light">{opt.label}</span>
+                    <span className="font-bold text-text-light">
+                      {opt.label}
+                    </span>
                     <span className="text-[10px] opacity-70 leading-tight mt-0.5">
                       {opt.desc}
                     </span>
@@ -457,7 +440,9 @@ export default function KalkulatorBMIPage() {
                     >
                       {result.status}
                     </span>
-                    <p className={`text-sm font-black ${statusCfg!.color} mt-2`}>
+                    <p
+                      className={`text-sm font-black ${statusCfg!.color} mt-2`}
+                    >
                       Skor BMI: {result.bmi}
                     </p>
                   </div>
@@ -470,7 +455,10 @@ export default function KalkulatorBMIPage() {
                           🔥 BMR (Metabolisme Basal)
                         </span>
                         <span className="text-sm font-black text-text-light">
-                          {result.bmr} <span className="text-[10px] text-text-muted font-bold">kkal/hari</span>
+                          {result.bmr}{" "}
+                          <span className="text-[10px] text-text-muted font-bold">
+                            kkal/hari
+                          </span>
                         </span>
                       </div>
 
@@ -479,7 +467,10 @@ export default function KalkulatorBMIPage() {
                           ⚡ TDEE (Kebutuhan Harian)
                         </span>
                         <span className="text-sm font-black text-text-light">
-                          {result.tdee} <span className="text-[10px] text-text-muted font-bold">kkal/hari</span>
+                          {result.tdee}{" "}
+                          <span className="text-[10px] text-text-muted font-bold">
+                            kkal/hari
+                          </span>
                         </span>
                       </div>
 
@@ -494,7 +485,9 @@ export default function KalkulatorBMIPage() {
                         </div>
                         <span className="text-xl font-black text-primary">
                           {result.target_kalori}{" "}
-                          <span className="text-xs font-bold text-primary/70">kkal</span>
+                          <span className="text-xs font-bold text-primary/70">
+                            kkal
+                          </span>
                         </span>
                       </div>
                     </div>
@@ -503,23 +496,39 @@ export default function KalkulatorBMIPage() {
                   {/* Penjelasan Istilah Kalori (BMR & TDEE) */}
                   <div className="mt-4 bg-background-base/40 border border-card-border/60 rounded-2xl p-4 text-left space-y-2.5">
                     <p className="text-xs font-black text-text-light flex items-center gap-1.5 border-b border-card-border/40 pb-2">
-                      <Lightbulb size={14} className="text-primary" /> Panduan Istilah Kalori:
+                      <Lightbulb size={14} className="text-primary" /> Panduan
+                      Istilah Kalori:
                     </p>
                     <div className="text-[11px] leading-relaxed text-text-muted space-y-1.5">
                       <p>
-                        <strong className="text-text-light font-bold">🔥 BMR (Basal Metabolic Rate):</strong> Energi minimal yang dibakar tubuh saat istirahat total hanya untuk fungsi organ vital (jantung, bernapas, dan otak).
+                        <strong className="text-text-light font-bold">
+                          🔥 BMR (Basal Metabolic Rate):
+                        </strong>{" "}
+                        Energi minimal yang dibakar tubuh saat istirahat total
+                        hanya untuk fungsi organ vital (jantung, bernapas, dan
+                        otak).
                       </p>
                       <p>
-                        <strong className="text-text-light font-bold">⚡ TDEE (Total Energy Expenditure):</strong> Total kalori harian nyata yang Anda bakar setelah memperhitungkan olahraga & aktivitas fisik harian.
+                        <strong className="text-text-light font-bold">
+                          ⚡ TDEE (Total Energy Expenditure):
+                        </strong>{" "}
+                        Total kalori harian nyata yang Anda bakar setelah
+                        memperhitungkan olahraga & aktivitas fisik harian.
                       </p>
                       <p>
-                        <strong className="text-text-light font-bold">🎯 Target Kalori:</strong> Rekomendasi asupan makan harian agar berat badan Anda ideal (defisit untuk turun, surplus untuk naik).
+                        <strong className="text-text-light font-bold">
+                          🎯 Target Kalori:
+                        </strong>{" "}
+                        Rekomendasi asupan makan harian agar berat badan Anda
+                        ideal (defisit untuk turun, surplus untuk naik).
                       </p>
                     </div>
                   </div>
 
                   <p className="text-text-muted text-xs leading-relaxed text-center mt-4">
-                    Asupan {result.target_kalori ?? 2000} kkal/hari akan membantu Anda mencapai berat badan ideal secara bertahap dan aman.
+                    Asupan {result.target_kalori ?? 2000} kkal/hari akan
+                    membantu Anda mencapai berat badan ideal secara bertahap dan
+                    aman.
                   </p>
                 </div>
               ) : (
@@ -535,7 +544,8 @@ export default function KalkulatorBMIPage() {
                     </p>
                   </div>
                   <p className="text-text-muted text-sm">
-                    Pilih usia & aktivitas harian lalu tekan tombol hitung untuk melihat kebutuhan kalori harian Anda.
+                    Pilih usia & aktivitas harian lalu tekan tombol hitung untuk
+                    melihat kebutuhan kalori harian Anda.
                   </p>
                 </div>
               )}
@@ -562,12 +572,36 @@ export default function KalkulatorBMIPage() {
           </div>
         </div>
 
-        {/* ── Riwayat & Progress Chart ── */}
-        <BMIRiwayatChart
-          history={history}
-          onRefreshHistory={fetchHistory}
-          isLoggedIn={isLoggedIn}
-        />
+        {/* ── Riwayat & Progress Chart / Guest Callout ── */}
+        {isLoggedIn ? (
+          <BMIRiwayatChart
+            history={history}
+            onRefreshHistory={fetchHistory}
+            isLoggedIn={isLoggedIn}
+          />
+        ) : (
+          <div className="bg-card-dark border border-card-border rounded-3xl p-6 sm:p-8 mb-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-lg">
+            <div className="flex items-center gap-4 text-left">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles size={24} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-text-light text-base mb-1">
+                  Ingin Menyimpan Riwayat & Pantau Progres?
+                </h3>
+                <p className="text-text-muted text-sm leading-relaxed">
+                  Masuk atau buat akun gratis untuk mencatat setiap hasil hitungan, memantau grafik perubahan berat badan, dan target kalori harian Anda.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/login"
+              className="flex-shrink-0 inline-flex items-center justify-center bg-primary hover:bg-primary-hover text-background-dark font-black px-6 py-3 rounded-2xl text-sm transition-all shadow-[0_0_20px_rgba(0,255,127,0.3)] hover:shadow-[0_0_30px_rgba(0,255,127,0.5)]"
+            >
+              Masuk / Daftar
+            </Link>
+          </div>
+        )}
 
         {/* ── Kategori BMI ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
@@ -603,139 +637,167 @@ export default function KalkulatorBMIPage() {
         </div>
 
         {/* ── Rekomendasi Menu & Meal Plan Breakdown ── */}
-        {(result || true) && (() => {
-          const targetTotal = result?.target_kalori ?? 2000;
-          const sarapanKkal = Math.round(targetTotal * 0.25);
-          const siangKkal = Math.round(targetTotal * 0.40);
-          const malamKkal = Math.round(targetTotal * 0.35);
+        {(result || true) &&
+          (() => {
+            const targetTotal = result?.target_kalori ?? 2000;
+            const sarapanKkal = Math.round(targetTotal * 0.25);
+            const siangKkal = Math.round(targetTotal * 0.4);
+            const malamKkal = Math.round(targetTotal * 0.35);
 
-          const filteredMenus = menus.filter((item) => {
-            if (mealTab === "sarapan") return item.kalori <= sarapanKkal + 150;
-            if (mealTab === "siang") return item.kalori >= 350 && item.kalori <= siangKkal + 200;
-            if (mealTab === "malam") return item.kalori <= malamKkal + 150;
-            return true;
-          });
+            const filteredMenus = menus.filter((item) => {
+              if (mealTab === "sarapan")
+                return item.kalori <= sarapanKkal + 150;
+              if (mealTab === "siang")
+                return item.kalori >= 350 && item.kalori <= siangKkal + 200;
+              if (mealTab === "malam") return item.kalori <= malamKkal + 150;
+              return true;
+            });
 
-          return (
-            <div>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                <div>
-                  <h2 className="text-xl font-black text-text-light flex items-center gap-2">
-                    <Utensils size={18} className="text-primary" />
-                    Rekomendasi Menu Diet: {result?.status ?? previewStatus}
-                  </h2>
-                  <p className="text-text-muted text-sm mt-1">
-                    Nutrisi khusus untuk mendukung target kalori Harian Anda ({targetTotal} kkal/hari).
-                  </p>
-                </div>
-                <Link
-                  href="/menu"
-                  className="text-primary text-sm font-black flex items-center gap-1.5 hover:gap-2.5 transition-all whitespace-nowrap"
-                >
-                  Lihat Semua Menu <ArrowRight size={14} />
-                </Link>
-              </div>
-
-              {/* Meal Plan Breakdown Banner */}
-              <div className="grid grid-cols-3 gap-3 mb-6 bg-card-dark border border-card-border p-3.5 rounded-2xl">
-                <div className="text-center p-2 rounded-xl bg-background-base/60 border border-card-border/60">
-                  <span className="text-xs font-bold text-text-light block">🌅 Sarapan (25%)</span>
-                  <span className="text-sm font-black text-primary">~{sarapanKkal} kkal</span>
-                </div>
-                <div className="text-center p-2 rounded-xl bg-background-base/60 border border-card-border/60">
-                  <span className="text-xs font-bold text-text-light block">☀️ Makan Siang (40%)</span>
-                  <span className="text-sm font-black text-primary">~{siangKkal} kkal</span>
-                </div>
-                <div className="text-center p-2 rounded-xl bg-background-base/60 border border-card-border/60">
-                  <span className="text-xs font-bold text-text-light block">🌙 Makan Malam (35%)</span>
-                  <span className="text-sm font-black text-primary">~{malamKkal} kkal</span>
-                </div>
-              </div>
-
-              {/* Meal Plan Tabs */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6">
-                {[
-                  { id: "semua", label: "Semua Menu" },
-                  { id: "sarapan", label: `🌅 Sarapan (~${sarapanKkal} kkal)` },
-                  { id: "siang", label: `☀️ Makan Siang (~${siangKkal} kkal)` },
-                  { id: "malam", label: `🌙 Makan Malam (~${malamKkal} kkal)` },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setMealTab(tab.id as any)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                      mealTab === tab.id
-                        ? "bg-primary text-background-dark font-black shadow-[0_0_16px_rgba(0,255,127,0.3)]"
-                        : "bg-card-dark text-text-muted border border-card-border hover:text-text-light"
-                    }`}
+            return (
+              <div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                  <div>
+                    <h2 className="text-xl font-black text-text-light flex items-center gap-2">
+                      <Utensils size={18} className="text-primary" />
+                      Rekomendasi Menu Diet: {result?.status ?? previewStatus}
+                    </h2>
+                    <p className="text-text-muted text-sm mt-1">
+                      Nutrisi khusus untuk mendukung target kalori Harian Anda (
+                      {targetTotal} kkal/hari).
+                    </p>
+                  </div>
+                  <Link
+                    href="/menu"
+                    className="text-primary text-sm font-black flex items-center gap-1.5 hover:gap-2.5 transition-all whitespace-nowrap"
                   >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="h-px bg-card-border mb-6" />
-
-              {loadingMenus ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                    Lihat Semua Menu <ArrowRight size={14} />
+                  </Link>
                 </div>
-              ) : filteredMenus.length === 0 ? (
-                <div className="text-center py-12 text-text-muted text-sm bg-card-dark/40 border border-card-border rounded-2xl">
-                  Belum ada menu yang cocok untuk kategori ini.
+
+                {/* Meal Plan Breakdown Banner */}
+                <div className="grid grid-cols-3 gap-3 mb-6 bg-card-dark border border-card-border p-3.5 rounded-2xl">
+                  <div className="text-center p-2 rounded-xl bg-background-base/60 border border-card-border/60">
+                    <span className="text-xs font-bold text-text-light block">
+                      🌅 Sarapan (25%)
+                    </span>
+                    <span className="text-sm font-black text-primary">
+                      ~{sarapanKkal} kkal
+                    </span>
+                  </div>
+                  <div className="text-center p-2 rounded-xl bg-background-base/60 border border-card-border/60">
+                    <span className="text-xs font-bold text-text-light block">
+                      ☀️ Makan Siang (40%)
+                    </span>
+                    <span className="text-sm font-black text-primary">
+                      ~{siangKkal} kkal
+                    </span>
+                  </div>
+                  <div className="text-center p-2 rounded-xl bg-background-base/60 border border-card-border/60">
+                    <span className="text-xs font-bold text-text-light block">
+                      🌙 Makan Malam (35%)
+                    </span>
+                    <span className="text-sm font-black text-primary">
+                      ~{malamKkal} kkal
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {filteredMenus.map((item) => {
-                    const pct = Math.round((item.kalori / targetTotal) * 100);
-                    return (
-                      <Link key={item.id} href={`/menu/${item.slug}`}>
-                        <div className="group bg-card-dark border border-card-border rounded-2xl overflow-hidden hover:border-primary/25 transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,255,127,0.06)]">
-                          <div className="relative h-44 overflow-hidden">
-                            <Image
-                              src={item.gambar}
-                              alt={item.nama_menu}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
-                              unoptimized
-                            />
-                            <div className="absolute inset-0 bg-linear-to-t from-card-dark/80 to-transparent" />
-                            <span className="absolute bottom-3 left-3 bg-card-dark/90 border border-primary/30 text-primary text-[10px] font-black px-2.5 py-1 rounded-lg backdrop-blur-md">
-                              {pct}% Target Harian
-                            </span>
-                            <span className="absolute bottom-3 right-3 bg-primary text-background-dark text-[9px] font-black px-2 py-0.5 rounded-full">
-                              RECOMMENDED
-                            </span>
-                          </div>
-                          <div className="p-4">
-                            <h3 className="font-black text-text-light text-sm mb-2 group-hover:text-primary transition-colors line-clamp-1">
-                              {item.nama_menu}
-                            </h3>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 text-xs text-text-muted">
-                                <span className="flex items-center gap-1 font-bold text-orange-400">
-                                  <Flame size={12} /> {item.kalori} kkal
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Clock size={12} className="text-primary/70" />{" "}
-                                  {item.waktu_memasak}m
-                                </span>
-                              </div>
-                              <ChevronRight
-                                size={14}
-                                className="text-primary opacity-0 group-hover:opacity-100 transition-all"
+
+                {/* Meal Plan Tabs */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6">
+                  {[
+                    { id: "semua", label: "Semua Menu" },
+                    {
+                      id: "sarapan",
+                      label: `🌅 Sarapan (~${sarapanKkal} kkal)`,
+                    },
+                    {
+                      id: "siang",
+                      label: `☀️ Makan Siang (~${siangKkal} kkal)`,
+                    },
+                    {
+                      id: "malam",
+                      label: `🌙 Makan Malam (~${malamKkal} kkal)`,
+                    },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setMealTab(tab.id as any)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                        mealTab === tab.id
+                          ? "bg-primary text-background-dark font-black shadow-[0_0_16px_rgba(0,255,127,0.3)]"
+                          : "bg-card-dark text-text-muted border border-card-border hover:text-text-light"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="h-px bg-card-border mb-6" />
+
+                {loadingMenus ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                  </div>
+                ) : filteredMenus.length === 0 ? (
+                  <div className="text-center py-12 text-text-muted text-sm bg-card-dark/40 border border-card-border rounded-2xl">
+                    Belum ada menu yang cocok untuk kategori ini.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {filteredMenus.map((item) => {
+                      const pct = Math.round((item.kalori / targetTotal) * 100);
+                      return (
+                        <Link key={item.id} href={`/menu/${item.slug}`}>
+                          <div className="group bg-card-dark border border-card-border rounded-2xl overflow-hidden hover:border-primary/25 transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,255,127,0.06)]">
+                            <div className="relative h-44 overflow-hidden">
+                              <Image
+                                src={item.gambar}
+                                alt={item.nama_menu}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                unoptimized
                               />
+                              <div className="absolute inset-0 bg-linear-to-t from-card-dark/80 to-transparent" />
+                              <span className="absolute bottom-3 left-3 bg-card-dark/90 border border-primary/30 text-primary text-[10px] font-black px-2.5 py-1 rounded-lg backdrop-blur-md">
+                                {pct}% Target Harian
+                              </span>
+                              <span className="absolute bottom-3 right-3 bg-primary text-background-dark text-[9px] font-black px-2 py-0.5 rounded-full">
+                                RECOMMENDED
+                              </span>
+                            </div>
+                            <div className="p-4">
+                              <h3 className="font-black text-text-light text-sm mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                                {item.nama_menu}
+                              </h3>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3 text-xs text-text-muted">
+                                  <span className="flex items-center gap-1 font-bold text-orange-400">
+                                    <Flame size={12} /> {item.kalori} kkal
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Clock
+                                      size={12}
+                                      className="text-primary/70"
+                                    />{" "}
+                                    {item.waktu_memasak}m
+                                  </span>
+                                </div>
+                                <ChevronRight
+                                  size={14}
+                                  className="text-primary opacity-0 group-hover:opacity-100 transition-all"
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })()}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
       </div>
     </div>
   );
