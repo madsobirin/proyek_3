@@ -73,21 +73,33 @@ export async function POST(request: Request) {
     // Simpan ke DB kalau user login
     const auth = await getAuthUser(request);
     if (auth?.userId) {
-      await prisma.perhitungan.create({
-        data: {
-          user_id: auth.userId,
-          tinggi_badan: tinggi,
-          berat_badan: berat,
-          bmi: bmiRounded,
-          status,
-          gender: sex,
-          usia: age,
-          aktivitas: activityKey,
-          bmr,
-          tdee,
-          target_kalori,
-        },
-      });
+      // Gunakan transaction agar insert riwayat dan update profil selalu sinkron
+      await prisma.$transaction([
+        prisma.perhitungan.create({
+          data: {
+            user_id: auth.userId,
+            tinggi_badan: tinggi,
+            berat_badan: berat,
+            bmi: bmiRounded,
+            status,
+            gender: sex,
+            usia: age,
+            aktivitas: activityKey,
+            bmr,
+            tdee,
+            target_kalori,
+          },
+        }),
+        // Otomatis update profil (Best Practice)
+        prisma.account.update({
+          where: { id: auth.userId },
+          data: {
+            // Karena di Account.prisma tipe data-nya Int?, kita round dulu
+            weight: Math.round(berat),
+            height: Math.round(tinggi),
+          },
+        }),
+      ]);
     }
 
     return NextResponse.json(
