@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   SlidersHorizontal,
   BarChart2,
@@ -138,8 +137,6 @@ const ALL_STATUSES: TargetStatus[] = [
 ];
 
 export default function KalkulatorBMIPage() {
-  const router = useRouter();
-
   const [gender, setGender] = useState<"pria" | "wanita">("pria");
   const [tinggi, setTinggi] = useState(170);
   const [berat, setBerat] = useState(65);
@@ -150,7 +147,6 @@ export default function KalkulatorBMIPage() {
   const [result, setResult] = useState<BMIResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [menus, setMenus] = useState<Menu[]>([]);
-  const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loadingMenus, setLoadingMenus] = useState(false);
   const [history, setHistory] = useState<PerhitunganItem[]>([]);
@@ -174,14 +170,12 @@ export default function KalkulatorBMIPage() {
     fetch("/api/auth/me")
       .then((r) => {
         setIsLoggedIn(r.ok);
-        setAuthChecked(true);
         if (r.ok) {
           fetchHistory();
         }
       })
       .catch(() => {
         setIsLoggedIn(false);
-        setAuthChecked(true);
       });
   }, []);
 
@@ -384,7 +378,7 @@ export default function KalkulatorBMIPage() {
                 {AKTIVITAS_OPTIONS.map((opt) => (
                   <button
                     key={opt.id}
-                    onClick={() => setAktivitas(opt.id as any)}
+                    onClick={() => setAktivitas(opt.id as typeof aktivitas)}
                     className={`flex flex-col text-left p-3 rounded-2xl border text-xs transition-all ${
                       aktivitas === opt.id
                         ? "border-primary bg-primary/10 text-primary font-black shadow-[0_0_14px_rgba(0,255,127,0.12)]"
@@ -721,7 +715,7 @@ export default function KalkulatorBMIPage() {
                   ].map((tab) => (
                     <button
                       key={tab.id}
-                      onClick={() => setMealTab(tab.id as any)}
+                      onClick={() => setMealTab(tab.id as typeof mealTab)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                         mealTab === tab.id
                           ? "bg-primary text-background-dark font-black shadow-[0_0_16px_rgba(0,255,127,0.3)]"

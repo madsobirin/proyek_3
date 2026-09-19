@@ -214,7 +214,12 @@ describe("ArtikelSchema", () => {
   });
 
   it("should use default values when penulis and is_featured are omitted", () => {
-    const { penulis, is_featured, ...partial } = validArtikel;
+    const partial = {
+      judul: validArtikel.judul,
+      kategori: validArtikel.kategori,
+      isi: validArtikel.isi,
+      gambar: validArtikel.gambar,
+    };
     const result = ArtikelSchema.safeParse(partial);
     expect(result.success).toBe(true);
     if (result.success) {
