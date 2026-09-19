@@ -104,18 +104,6 @@ export default function BMIRiwayatChart({
     }
   };
 
-  const formatShortDate = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
   // Format tanggal + jam untuk label X-axis, agar 2 entri pada hari yang sama tetap bisa dibedakan
   const formatXAxisLabel = (dateStr: string) => {
     try {

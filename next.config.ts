@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
       },
       { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "images.openfoodfacts.org" },
+      { protocol: "https", hostname: "static.openfoodfacts.org" },
     ],
   },
 };

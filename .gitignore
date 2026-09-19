@@ -45,3 +45,5 @@ next-env.d.ts
 .code-review-graph/
 .marscode
 !.env.example
+FITUR_SCAN_BARCODE.md
+mobile_scan.md

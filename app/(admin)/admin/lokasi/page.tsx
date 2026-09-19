@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Plus,
@@ -12,24 +11,11 @@ import {
   AlertCircle,
   X,
   CheckCircle,
-  Locate,
   ChevronLeft,
   ChevronRight,
   Pencil,
 } from "lucide-react";
 import LayoutAdmin from "@/components/admin/LayoutAdmin";
-
-const LokasiPickerMap = dynamic(
-  () => import("@/components/admin/LokasiPickerMap"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-[220px] flex items-center justify-center bg-gray-50 border border-gray-100 rounded-2xl">
-        <Loader2 className="w-6 h-6 text-[#22c55e] animate-spin" />
-      </div>
-    ),
-  },
-);
 
 interface Lokasi {
   id: number;

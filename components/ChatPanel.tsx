@@ -6,7 +6,6 @@ import {
   Send,
   Sparkles,
   X,
-  Leaf,
   Scale,
   Utensils,
   Heart,

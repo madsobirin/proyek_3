@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, Sun, Moon, X, MapPin } from "lucide-react";
+import { Menu, Sun, Moon, X, MapPin, ScanLine } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -65,6 +65,12 @@ export default function Navbar() {
             >
               {/* <MapPin size={14} /> */}
               Lokasi
+            </Link>
+            <Link
+              href="/scan-makanan"
+              className={`text-text-muted hover:text-primary font-medium transition-colors flex items-center gap-1 ${pathname === "/scan-makanan" ? "text-primary" : ""}`}
+            >
+              <ScanLine size={15} /> Riwayat Scan
             </Link>
           </div>
 
@@ -144,6 +150,13 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
             >
               <MapPin size={14} /> Lokasi Olahraga
+            </Link>
+            <Link
+              href="/scan-makanan"
+              className="block text-text-muted hover:text-primary font-medium transition-colors py-2 flex items-center gap-1.5"
+              onClick={() => setMobileOpen(false)}
+            >
+              <ScanLine size={14} /> Riwayat Scan
             </Link>
             <NavProfile />
           </div>
