@@ -26,6 +26,7 @@ model Account {
 
   perhitungan     Perhitungan[]
   lokasiOlahraga  LokasiOlahraga[]
+  scanMakanan     ScanMakanan[]
 
   @@map("accounts")
 }

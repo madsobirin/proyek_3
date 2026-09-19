@@ -1,0 +1,23 @@
+model ScanMakanan {
+  id      Int @id @default(autoincrement())
+  user_id Int
+
+  // Identitas produk dari Open Food Facts.
+  barcode      String
+  nama_makanan String
+  brand        String?
+  image_url    String?
+
+  // Nilai gizi yang dikirim dari hasil lookup (umumnya per 100 g).
+  kalori      Float?
+  protein     Float?
+  lemak       Float?
+  karbohidrat Float?
+  gula        Float?
+
+  created_at DateTime? @default(now())
+
+  account Account @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("scan_makanan")
+}
