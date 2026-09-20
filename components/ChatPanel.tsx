@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
 import {
   Bot,
   Send,
@@ -28,34 +29,73 @@ const QUICK_PROMPTS = [
   { icon: <Utensils size={13} />, text: "Rekomendasi menu diet" },
 ];
 
-// Render markdown sederhana
-function renderContent(text: string) {
-  const lines = text.split("\n");
-  return lines.map((line, i) => {
-    if (line.startsWith("**") && line.endsWith("**")) {
-      return (
-        <p key={i} className="font-bold text-text-light">
-          {line.slice(2, -2)}
-        </p>
-      );
-    }
-    // Bold inline
-    const parts = line.split(/(\*\*[^*]+\*\*)/g);
-    return (
-      <p key={i} className={line === "" ? "h-2" : ""}>
-        {parts.map((part, j) =>
-          part.startsWith("**") && part.endsWith("**") ? (
-            <strong key={j} className="text-primary font-bold">
-              {part.slice(2, -2)}
-            </strong>
-          ) : (
-            part
-          ),
-        )}
-      </p>
-    );
-  });
-}
+const markdownComponents: Components = {
+  h1: ({ children }) => (
+    <h1 className="text-sm font-bold text-text-light mt-2.5 mb-1 pb-0.5 border-b border-card-border first:mt-0">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="text-xs font-bold text-text-light mt-2 mb-1 first:mt-0">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-xs font-semibold text-text-light mt-1.5 mb-0.5 first:mt-0">
+      {children}
+    </h3>
+  ),
+  p: ({ children }) => (
+    <p className="mb-1.5 last:mb-0 leading-relaxed text-text-muted">
+      {children}
+    </p>
+  ),
+  ul: ({ children }) => (
+    <ul className="list-disc pl-4 space-y-0.5 my-1.5 text-text-muted">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="list-decimal pl-4 space-y-0.5 my-1.5 text-text-muted">
+      {children}
+    </ol>
+  ),
+  li: ({ children }) => (
+    <li className="leading-relaxed pl-0.5">{children}</li>
+  ),
+  strong: ({ children }) => (
+    <strong className="font-bold text-text-light">{children}</strong>
+  ),
+  em: ({ children }) => (
+    <em className="italic text-text-muted">{children}</em>
+  ),
+  code: ({ children }) => (
+    <code className="bg-background-dark/80 text-primary px-1.5 py-0.5 rounded text-[11px] font-mono border border-card-border">
+      {children}
+    </code>
+  ),
+  pre: ({ children }) => (
+    <pre className="bg-background-dark/90 text-text-light p-2.5 rounded-xl overflow-x-auto text-[11px] font-mono border border-card-border my-1.5 [&>code]:bg-transparent [&>code]:p-0 [&>code]:border-0">
+      {children}
+    </pre>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-2 border-primary/60 pl-2.5 my-1.5 italic text-text-muted bg-primary/5 py-0.5 rounded-r">
+      {children}
+    </blockquote>
+  ),
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary underline hover:text-primary-hover font-medium transition-colors"
+    >
+      {children}
+    </a>
+  ),
+  hr: () => <hr className="border-card-border my-2" />,
+};
 
 export default function ChatPanel({
   open,
@@ -291,13 +331,15 @@ export default function ChatPanel({
                       <div
                         className={`px-4 py-3 rounded-2xl text-xs leading-relaxed ${
                           msg.role === "user"
-                            ? "bg-primary text-background-dark font-semibold rounded-tr-sm"
-                            : "bg-card-dark border border-card-border text-text-muted rounded-tl-sm"
+                            ? "bg-primary text-background-dark font-semibold rounded-tr-sm whitespace-pre-wrap break-words"
+                            : "bg-card-dark border border-card-border text-text-muted rounded-tl-sm break-words"
                         }`}
                       >
                         {msg.role === "assistant" ? (
-                          <div className="space-y-0.5">
-                            {renderContent(msg.content)}
+                          <div className="space-y-1">
+                            <ReactMarkdown components={markdownComponents}>
+                              {msg.content}
+                            </ReactMarkdown>
                             {msg.isError && (
                               <button
                                 onClick={retryLastMessage}
