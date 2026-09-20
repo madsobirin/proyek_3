@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const GROQ_MODEL = "qwen/qwen3.8-27b";
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 2000; // 2 detik, akan naik eksponensial
 const RETRYABLE_STATUSES = [429, 503]; // rate-limit & overload
