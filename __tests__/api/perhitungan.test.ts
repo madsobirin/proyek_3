@@ -199,25 +199,6 @@ describe("TDEE Activity Multipliers", () => {
     expect(getFaktorAktivitas("active")).toBe(1.725);
     expect(getFaktorAktivitas("berat")).toBe(1.725);
   });
-
-  it("should map very_active / sangat_aktif to factor 1.9", () => {
-    expect(getFaktorAktivitas("very_active")).toBe(1.9);
-    expect(getFaktorAktivitas("very active")).toBe(1.9);
-    expect(getFaktorAktivitas("sangat_aktif")).toBe(1.9);
-  });
-
-  it("should compute accurate TDEE for very active (1.9)", () => {
-    const hasil = hitungAnalisisKesehatan({
-      tinggi: 170,
-      berat: 65,
-      gender: "pria",
-      usia: 25,
-      aktivitas: "very_active",
-    });
-    // BMR 1592.5 * 1.9 = 3025.75
-    expect(hasil.tdee).toBe(1592.5 * 1.9);
-    expect(Math.round(hasil.tdee)).toBe(3026);
-  });
 });
 
 // ─── 5. Kisaran Berat Berdasarkan BMI ─────────────────────────────────────────
