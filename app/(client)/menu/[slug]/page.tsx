@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback} from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +14,6 @@ import {
   Heart,
   TrendingUp,
   ChevronRight,
-  Eye,
 } from "lucide-react";
 
 type TargetStatus = "Kurus" | "Normal" | "Berlebih" | "Obesitas";
@@ -27,7 +26,6 @@ type Menu = {
   kalori: number;
   target_status: TargetStatus;
   waktu_memasak: number;
-  dibaca: number | null;
   gambar: string;
   created_at: string;
 };
@@ -69,7 +67,6 @@ export default function MenuDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [liked, setLiked] = useState(false);
   const [shared, setShared] = useState(false);
-  const hasTracked = useRef(false);
 
   const fetchMenu = useCallback(async () => {
     try {
@@ -83,16 +80,16 @@ export default function MenuDetailPage() {
         setMenu(data);
 
         // Increment dibaca 1x
-        if (!hasTracked.current) {
-          hasTracked.current = true;
-          fetch(`/api/menus/${slug}`, { method: "PATCH" })
-            .then(() => {
-              setMenu((prev) =>
-                prev ? { ...prev, dibaca: (prev.dibaca ?? 0) + 1 } : prev,
-              );
-            })
-            .catch(() => {});
-        }
+        // if (!hasTracked.current) {
+        //   hasTracked.current = true;
+        //   fetch(`/api/menus/${slug}`, { method: "PATCH" })
+        //     .then(() => {
+        //       setMenu((prev) =>
+        //         prev ? { ...prev, dibaca: (prev.dibaca ?? 0) + 1 } : prev,
+        //       );
+        //     })
+        //     .catch(() => {});
+        // }
 
         // Fetch related by target_status
         const relRes = await fetch(`/api/menus?target=${data.target_status}`);
@@ -195,11 +192,11 @@ export default function MenuDetailPage() {
               </span>
             </div>
 
-            {/* Views */}
+            {/* Views
             <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-background-dark/60 backdrop-blur-sm border border-card-border px-2.5 py-1 rounded-full text-xs text-text-muted">
               <Eye size={11} />
               {menu.dibaca ?? 0}
-            </div>
+            </div> */}
 
             {/* Stats overlay — bottom of image */}
             <div className="absolute bottom-0 left-0 right-0 px-6 pb-6 flex items-end justify-between">
@@ -317,7 +314,7 @@ export default function MenuDetailPage() {
           <h3 className="text-sm font-black text-text-light mb-4">
             Info Nutrisi
           </h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {[
               {
                 label: "Kalori",
@@ -337,12 +334,12 @@ export default function MenuDetailPage() {
                 icon: <Shield size={14} className={statusCfg.color} />,
                 bg: `${statusCfg.bg} ${statusCfg.border}`,
               },
-              {
-                label: "Dilihat",
-                value: `${menu.dibaca ?? 0}x`,
-                icon: <Eye size={14} className="text-text-muted" />,
-                bg: "bg-background-base border-card-border",
-              },
+              // {
+              //   label: "Dilihat",
+              //   value: `${menu.dibaca ?? 0}x`,
+              //   icon: <Eye size={14} className="text-text-muted" />,
+              //   bg: "bg-background-base border-card-border",
+              // },
             ].map((item) => (
               <div
                 key={item.label}
