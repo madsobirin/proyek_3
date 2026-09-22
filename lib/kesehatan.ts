@@ -12,7 +12,6 @@
  *   - Light: 1.375
  *   - Moderate: 1.55
  *   - Active: 1.725
- *   - Very Active: 1.9
  * - Kisaran berat berdasarkan BMI = 18.5 × tinggi(m)² sampai 24.9 × tinggi(m)²
  * - Protein = BB × 1.4 g/hari
  * - Lemak = (TDEE × 30%) / 9
@@ -34,12 +33,10 @@ export type InputKesehatan = {
     | "light"
     | "moderate"
     | "active"
-    | "very_active"
     | "rebahan"
     | "ringan"
     | "sedang"
     | "berat"
-    | "sangat_aktif"
     | string;
 };
 
@@ -64,13 +61,10 @@ export const FAKTOR_AKTIVITAS: Record<string, number> = {
   sedang: 1.55,
   active: 1.725,
   berat: 1.725,
-  very_active: 1.9,
-  sangat_aktif: 1.9,
 };
 
 export function getFaktorAktivitas(aktivitas: string): number {
   const key = aktivitas.toLowerCase().trim().replace(/[\s-]+/g, "_");
-  if (key === "veryactive" || key === "sangataktif") return 1.9;
   return FAKTOR_AKTIVITAS[key] ?? 1.55;
 }
 

@@ -57,7 +57,6 @@ const AKTIVITAS_OPTIONS = [
   { id: "ringan", label: "Light", desc: "Olahraga 1–3 hari/minggu (1.375)" },
   { id: "sedang", label: "Moderate", desc: "Olahraga 3–5 hari/minggu (1.55)" },
   { id: "berat", label: "Active", desc: "Olahraga 6–7 hari/minggu (1.725)" },
-  { id: "sangat_aktif", label: "Very Active", desc: "Latihan berat / atlet harian (1.9)" },
 ] as const;
 
 const STATUS_CONFIG: Record<
