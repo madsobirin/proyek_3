@@ -11,6 +11,11 @@ model Perhitungan {
   bmr           Float?
   tdee          Float?
   target_kalori Float?
+  berat_min     Float?
+  berat_max     Float?
+  protein       Float?
+  karbohidrat   Float?
+  lemak         Float?
 
   created_at DateTime? @default(now())
   updated_at DateTime? @updatedAt

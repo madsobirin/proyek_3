@@ -28,6 +28,11 @@ export type PerhitunganItem = {
   bmr?: number;
   tdee?: number;
   target_kalori?: number;
+  berat_min?: number;
+  berat_max?: number;
+  protein?: number;
+  karbohidrat?: number;
+  lemak?: number;
   created_at: string;
   updated_at?: string;
 };
@@ -265,7 +270,7 @@ export default function BMIRiwayatChart({
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-black text-primary">
-                  {latestEntry?.bmi}
+                  {latestEntry?.bmi?.toFixed(1)}
                 </span>
               </div>
               <span className="inline-block mt-2 text-[10px] font-black px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/25">
@@ -486,7 +491,7 @@ export default function BMIRiwayatChart({
                   <div>
                     <span className="text-text-muted">BMI: </span>
                     <span className="font-bold text-text-light">
-                      {activePoint.item.bmi}
+                      {activePoint.item.bmi.toFixed(1)}
                     </span>
                     <span className="ml-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                       {activePoint.item.status}
@@ -512,7 +517,7 @@ export default function BMIRiwayatChart({
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-card-dark border border-card-border flex items-center justify-center text-primary font-black text-xs shrink-0">
-                      {item.bmi}
+                      {item.bmi.toFixed(1)}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
