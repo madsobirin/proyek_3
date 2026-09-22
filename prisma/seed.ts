@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient } from "../generated/prisma/client";
 import { generateMenus } from "./factories/menuFactory";
 import { generateArtikels } from "./factories/artikelFactory";
