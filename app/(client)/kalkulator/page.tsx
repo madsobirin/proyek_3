@@ -53,7 +53,11 @@ type Menu = {
 };
 
 const AKTIVITAS_OPTIONS = [
-  { id: "rebahan", label: "Sedentary", desc: "Jarang / tidak pernah olahraga (1.2)" },
+  {
+    id: "rebahan",
+    label: "Sedentary",
+    desc: "Jarang / tidak pernah olahraga (1.2)",
+  },
   { id: "ringan", label: "Light", desc: "Olahraga 1–3 hari/minggu (1.375)" },
   { id: "sedang", label: "Moderate", desc: "Olahraga 3–5 hari/minggu (1.55)" },
   { id: "berat", label: "Active", desc: "Olahraga 6–7 hari/minggu (1.725)" },
@@ -150,7 +154,7 @@ export default function KalkulatorBMIPage() {
   const [berat, setBerat] = useState(65);
   const [usia, setUsia] = useState(25);
   const [aktivitas, setAktivitas] = useState<
-    "rebahan" | "ringan" | "sedang" | "berat" | "sangat_aktif"
+    "rebahan" | "ringan" | "sedang" | "berat"
   >("sedang");
   const [result, setResult] = useState<BMIResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -238,7 +242,6 @@ export default function KalkulatorBMIPage() {
 
   return (
     <div className="min-h-screen bg-background-base">
-
       {/* Hero */}
       <section className="relative bg-background-dark pt-14 pb-16 border-b border-card-border overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
@@ -388,8 +391,6 @@ export default function KalkulatorBMIPage() {
                     key={opt.id}
                     onClick={() => setAktivitas(opt.id as typeof aktivitas)}
                     className={`flex flex-col text-left p-3 rounded-2xl border text-xs transition-all ${
-                      opt.id === "sangat_aktif" ? "col-span-2" : ""
-                    } ${
                       aktivitas === opt.id
                         ? "border-primary bg-primary/10 text-primary font-black shadow-[0_0_14px_rgba(0,255,127,0.12)]"
                         : "border-card-border bg-background-base/40 text-text-muted hover:border-primary/40 hover:text-text-light"
@@ -445,9 +446,19 @@ export default function KalkulatorBMIPage() {
                       {result.status}
                     </span>
                     <div className="flex items-center justify-center gap-3 mt-3 text-xs font-bold text-text-muted">
-                      <span>Tinggi: <strong className="text-text-light">{result.tinggi_badan ?? tinggi} cm</strong></span>
+                      <span>
+                        Tinggi:{" "}
+                        <strong className="text-text-light">
+                          {result.tinggi_badan ?? tinggi} cm
+                        </strong>
+                      </span>
                       <span>•</span>
-                      <span>Berat: <strong className="text-text-light">{result.berat_badan ?? berat} kg</strong></span>
+                      <span>
+                        Berat:{" "}
+                        <strong className="text-text-light">
+                          {result.berat_badan ?? berat} kg
+                        </strong>
+                      </span>
                     </div>
                   </div>
 
@@ -462,7 +473,10 @@ export default function KalkulatorBMIPage() {
                         ≈ {result.bmi.toFixed(1)}
                       </span>
                       <span className="text-[10px] text-text-muted">
-                        Status: <strong className={statusCfg!.color}>{result.status}</strong>
+                        Status:{" "}
+                        <strong className={statusCfg!.color}>
+                          {result.status}
+                        </strong>
                       </span>
                     </div>
 
@@ -472,7 +486,8 @@ export default function KalkulatorBMIPage() {
                         Kisaran berat berdasarkan BMI
                       </span>
                       <span className="text-xl font-black text-text-light block my-1">
-                        ≈ {result.berat_min.toFixed(1)} – {result.berat_max.toFixed(1)} kg
+                        ≈ {result.berat_min.toFixed(1)} –{" "}
+                        {result.berat_max.toFixed(1)} kg
                       </span>
                       <span className="text-[10px] text-text-muted">
                         Rentang berat normal (18.5 – 24.9)
@@ -498,7 +513,8 @@ export default function KalkulatorBMIPage() {
                     {/* Kebutuhan energi harian */}
                     <div className="bg-primary/10 border border-primary/30 rounded-2xl p-3.5 flex flex-col justify-between">
                       <span className="text-[11px] font-bold text-primary uppercase tracking-wider block flex items-center gap-1">
-                        <Zap size={12} className="text-primary" /> Kebutuhan energi harian
+                        <Zap size={12} className="text-primary" /> Kebutuhan
+                        energi harian
                       </span>
                       <span className="text-xl font-black text-primary block my-1">
                         ≈ {Math.round(result.tdee)}{" "}
@@ -515,7 +531,8 @@ export default function KalkulatorBMIPage() {
                   {/* Makronutrien Section */}
                   <div className="bg-background-base/60 border border-card-border rounded-2xl p-4">
                     <p className="text-xs font-black text-text-light mb-3 flex items-center gap-1.5">
-                      <Utensils size={14} className="text-primary" /> Rekomendasi Asupan Makronutrien
+                      <Utensils size={14} className="text-primary" />{" "}
+                      Rekomendasi Asupan Makronutrien
                     </p>
                     <div className="grid grid-cols-3 gap-2 text-center">
                       {/* Protein */}
@@ -524,7 +541,10 @@ export default function KalkulatorBMIPage() {
                           Protein
                         </span>
                         <span className="text-base sm:text-lg font-black text-text-light block my-0.5">
-                          ≈ {Math.round(result.protein)} <span className="text-[10px] font-bold text-text-muted">g/hari</span>
+                          ≈ {Math.round(result.protein)}{" "}
+                          <span className="text-[10px] font-bold text-text-muted">
+                            g/hari
+                          </span>
                         </span>
                         <span className="text-[9px] text-text-muted/70 block">
                           BB × 1.4 g
@@ -537,7 +557,10 @@ export default function KalkulatorBMIPage() {
                           Lemak
                         </span>
                         <span className="text-base sm:text-lg font-black text-text-light block my-0.5">
-                          ≈ {Math.round(result.lemak)} <span className="text-[10px] font-bold text-text-muted">g/hari</span>
+                          ≈ {Math.round(result.lemak)}{" "}
+                          <span className="text-[10px] font-bold text-text-muted">
+                            g/hari
+                          </span>
                         </span>
                         <span className="text-[9px] text-text-muted/70 block">
                           30% TDEE
@@ -550,7 +573,10 @@ export default function KalkulatorBMIPage() {
                           Karbohidrat
                         </span>
                         <span className="text-base sm:text-lg font-black text-text-light block my-0.5">
-                          ≈ {Math.round(result.karbohidrat)} <span className="text-[10px] font-bold text-text-muted">g/hari</span>
+                          ≈ {Math.round(result.karbohidrat)}{" "}
+                          <span className="text-[10px] font-bold text-text-muted">
+                            g/hari
+                          </span>
                         </span>
                         <span className="text-[9px] text-primary font-bold block">
                           sisa kalori
@@ -588,7 +614,8 @@ export default function KalkulatorBMIPage() {
                         <strong className="text-text-light font-bold">
                           ⚖️ Kisaran Berat Berdasarkan BMI:
                         </strong>{" "}
-                        Rentang berat badan normal (BMI 18.5 – 24.9) yang direkomendasikan untuk tinggi badan Anda.
+                        Rentang berat badan normal (BMI 18.5 – 24.9) yang
+                        direkomendasikan untuk tinggi badan Anda.
                       </p>
                     </div>
                   </div>
@@ -605,13 +632,20 @@ export default function KalkulatorBMIPage() {
                       BMI: ≈ {previewBMI}
                     </p>
                     <div className="flex justify-center gap-4 text-xs text-text-muted mt-2">
-                      <span>Tinggi: <strong className="text-text-light">{tinggi} cm</strong></span>
-                      <span>Berat: <strong className="text-text-light">{berat} kg</strong></span>
+                      <span>
+                        Tinggi:{" "}
+                        <strong className="text-text-light">{tinggi} cm</strong>
+                      </span>
+                      <span>
+                        Berat:{" "}
+                        <strong className="text-text-light">{berat} kg</strong>
+                      </span>
                     </div>
                   </div>
                   <p className="text-text-muted text-sm">
                     Pilih usia & aktivitas harian lalu tekan tombol hitung untuk
-                    melihat rincian BMR, kebutuhan energi harian, dan rekomendasi makronutrien lengkap Anda.
+                    melihat rincian BMR, kebutuhan energi harian, dan
+                    rekomendasi makronutrien lengkap Anda.
                   </p>
                 </div>
               )}
@@ -656,7 +690,9 @@ export default function KalkulatorBMIPage() {
                   Ingin Menyimpan Riwayat & Pantau Progres?
                 </h3>
                 <p className="text-text-muted text-sm leading-relaxed">
-                  Masuk atau buat akun gratis untuk mencatat setiap hasil hitungan, memantau grafik perubahan berat badan, dan target kalori harian Anda.
+                  Masuk atau buat akun gratis untuk mencatat setiap hasil
+                  hitungan, memantau grafik perubahan berat badan, dan target
+                  kalori harian Anda.
                 </p>
               </div>
             </div>
@@ -728,8 +764,8 @@ export default function KalkulatorBMIPage() {
                       Rekomendasi Menu Diet: {result?.status ?? previewStatus}
                     </h2>
                     <p className="text-text-muted text-sm mt-1">
-                      Nutrisi seimbang untuk mendukung kebutuhan energi harian Anda (
-                      {targetTotal} kcal/hari).
+                      Nutrisi seimbang untuk mendukung kebutuhan energi harian
+                      Anda ({targetTotal} kcal/hari).
                     </p>
                   </div>
                   <Link

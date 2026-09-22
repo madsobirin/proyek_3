@@ -64,7 +64,10 @@ export const FAKTOR_AKTIVITAS: Record<string, number> = {
 };
 
 export function getFaktorAktivitas(aktivitas: string): number {
-  const key = aktivitas.toLowerCase().trim().replace(/[\s-]+/g, "_");
+  const key = aktivitas
+    .toLowerCase()
+    .trim()
+    .replace(/[\s-]+/g, "_");
   return FAKTOR_AKTIVITAS[key] ?? 1.55;
 }
 
