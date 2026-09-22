@@ -18,20 +18,28 @@ import {
   AlertCircle,
   Scale,
   Sparkles,
+  Zap,
+  Activity,
 } from "lucide-react";
 import BMIRiwayatChart, {
   PerhitunganItem,
 } from "@/components/client/BMIRiwayatChart";
+import { hitungAnalisisKesehatan } from "@/lib/kesehatan";
 
 type TargetStatus = "Kurus" | "Normal" | "Berlebih" | "Obesitas";
 
 type BMIResult = {
   bmi: number;
   status: TargetStatus;
-  bmr?: number;
-  tdee?: number;
-  target_kalori?: number;
-  jenis_target?: string;
+  bmr: number;
+  tdee: number;
+  berat_min: number;
+  berat_max: number;
+  protein: number;
+  lemak: number;
+  karbohidrat: number;
+  tinggi_badan?: number;
+  berat_badan?: number;
 };
 
 type Menu = {
@@ -45,10 +53,11 @@ type Menu = {
 };
 
 const AKTIVITAS_OPTIONS = [
-  { id: "rebahan", label: "Rebahan", desc: "Jarang / tidak pernah olahraga" },
-  { id: "ringan", label: "Ringan", desc: "Olahraga 1–3 hari/minggu" },
-  { id: "sedang", label: "Sedang", desc: "Olahraga 3–5 hari/minggu" },
-  { id: "berat", label: "Berat", desc: "Olahraga 6–7 hari/minggu" },
+  { id: "rebahan", label: "Sedentary", desc: "Jarang / tidak pernah olahraga (1.2)" },
+  { id: "ringan", label: "Light", desc: "Olahraga 1–3 hari/minggu (1.375)" },
+  { id: "sedang", label: "Moderate", desc: "Olahraga 3–5 hari/minggu (1.55)" },
+  { id: "berat", label: "Active", desc: "Olahraga 6–7 hari/minggu (1.725)" },
+  { id: "sangat_aktif", label: "Very Active", desc: "Latihan berat / atlet harian (1.9)" },
 ] as const;
 
 const STATUS_CONFIG: Record<
@@ -142,7 +151,7 @@ export default function KalkulatorBMIPage() {
   const [berat, setBerat] = useState(65);
   const [usia, setUsia] = useState(25);
   const [aktivitas, setAktivitas] = useState<
-    "rebahan" | "ringan" | "sedang" | "berat"
+    "rebahan" | "ringan" | "sedang" | "berat" | "sangat_aktif"
   >("sedang");
   const [result, setResult] = useState<BMIResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -179,16 +188,16 @@ export default function KalkulatorBMIPage() {
       });
   }, []);
 
-  // Auto hitung preview BMI
-  const previewBMI = parseFloat((berat / Math.pow(tinggi / 100, 2)).toFixed(1));
-  const previewStatus: TargetStatus =
-    previewBMI < 18.5
-      ? "Kurus"
-      : previewBMI < 25
-        ? "Normal"
-        : previewBMI < 30
-          ? "Berlebih"
-          : "Obesitas";
+  // Auto hitung preview menggunakan modul sentral lib/kesehatan
+  const preview = hitungAnalisisKesehatan({
+    tinggi,
+    berat,
+    gender,
+    usia,
+    aktivitas,
+  });
+  const previewBMI = parseFloat(preview.bmi.toFixed(1));
+  const previewStatus: TargetStatus = preview.status;
 
   const handleHitung = async () => {
     setLoading(true);
@@ -380,6 +389,8 @@ export default function KalkulatorBMIPage() {
                     key={opt.id}
                     onClick={() => setAktivitas(opt.id as typeof aktivitas)}
                     className={`flex flex-col text-left p-3 rounded-2xl border text-xs transition-all ${
+                      opt.id === "sangat_aktif" ? "col-span-2" : ""
+                    } ${
                       aktivitas === opt.id
                         ? "border-primary bg-primary/10 text-primary font-black shadow-[0_0_14px_rgba(0,255,127,0.12)]"
                         : "border-card-border bg-background-base/40 text-text-muted hover:border-primary/40 hover:text-text-light"
@@ -408,7 +419,7 @@ export default function KalkulatorBMIPage() {
                 </>
               ) : (
                 <>
-                  <BarChart2 size={18} /> Hitung BMI & Kalori Saya
+                  <BarChart2 size={18} /> Hitung Analisis Kesehatan Saya
                 </>
               )}
             </button>
@@ -419,79 +430,144 @@ export default function KalkulatorBMIPage() {
             {/* Hasil */}
             <div className="bg-card-dark border border-card-border rounded-3xl p-6 md:p-8 flex-1">
               <h2 className="text-base font-black text-text-light flex items-center gap-2 mb-6">
-                <BarChart2 size={16} className="text-primary" />
-                Hasil Analisis BMI & Kalori
+                <Activity size={16} className="text-primary" />
+                Hasil Analisis Kesehatan & Nutrisi
               </h2>
 
               {result ? (
-                <div>
+                <div className="space-y-4">
                   {/* Status BMI Card */}
                   <div
-                    className={`bg-background-base border ${statusCfg!.border} rounded-2xl p-5 mb-4 text-center`}
+                    className={`bg-background-base border ${statusCfg!.border} rounded-2xl p-5 text-center`}
                   >
                     <span
-                      className={`inline-block px-4 py-1 rounded-full text-2xl font-black ${statusCfg!.bg} ${statusCfg!.color} border ${statusCfg!.border}`}
+                      className={`inline-block px-5 py-1.5 rounded-full text-2xl font-black ${statusCfg!.bg} ${statusCfg!.color} border ${statusCfg!.border}`}
                     >
                       {result.status}
                     </span>
-                    <p
-                      className={`text-sm font-black ${statusCfg!.color} mt-2`}
-                    >
-                      Skor BMI: {result.bmi}
-                    </p>
+                    <div className="flex items-center justify-center gap-3 mt-3 text-xs font-bold text-text-muted">
+                      <span>Tinggi: <strong className="text-text-light">{result.tinggi_badan ?? tinggi} cm</strong></span>
+                      <span>•</span>
+                      <span>Berat: <strong className="text-text-light">{result.berat_badan ?? berat} kg</strong></span>
+                    </div>
                   </div>
 
-                  {/* Kalori Section Card */}
-                  {result.tdee && (
-                    <div className="bg-background-base/60 border border-card-border rounded-2xl p-4 space-y-3">
-                      <div className="flex items-center justify-between border-b border-card-border/60 pb-2.5">
+                  {/* Grid Indikator Kesehatan Utama */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* BMI */}
+                    <div className="bg-background-base/60 border border-card-border rounded-2xl p-3.5 flex flex-col justify-between">
+                      <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
+                        BMI
+                      </span>
+                      <span className="text-2xl font-black text-primary block my-1">
+                        ≈ {result.bmi.toFixed(1)}
+                      </span>
+                      <span className="text-[10px] text-text-muted">
+                        Status: <strong className={statusCfg!.color}>{result.status}</strong>
+                      </span>
+                    </div>
+
+                    {/* Kisaran berat berdasarkan BMI */}
+                    <div className="bg-background-base/60 border border-card-border rounded-2xl p-3.5 flex flex-col justify-between">
+                      <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
+                        Kisaran berat berdasarkan BMI
+                      </span>
+                      <span className="text-xl font-black text-text-light block my-1">
+                        ≈ {result.berat_min.toFixed(1)} – {result.berat_max.toFixed(1)} kg
+                      </span>
+                      <span className="text-[10px] text-text-muted">
+                        Rentang berat normal (18.5 – 24.9)
+                      </span>
+                    </div>
+
+                    {/* BMR */}
+                    <div className="bg-background-base/60 border border-card-border rounded-2xl p-3.5 flex flex-col justify-between">
+                      <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider block flex items-center gap-1">
+                        <Flame size={12} className="text-orange-400" /> BMR
+                      </span>
+                      <span className="text-xl font-black text-text-light block my-1">
+                        ≈ {Math.round(result.bmr)}{" "}
                         <span className="text-xs font-bold text-text-muted">
-                          🔥 BMR (Metabolisme Basal)
+                          kcal/hari
                         </span>
-                        <span className="text-sm font-black text-text-light">
-                          {result.bmr}{" "}
-                          <span className="text-[10px] text-text-muted font-bold">
-                            kkal/hari
-                          </span>
+                      </span>
+                      <span className="text-[10px] text-text-muted">
+                        Metabolisme basal saat istirahat
+                      </span>
+                    </div>
+
+                    {/* Kebutuhan energi harian */}
+                    <div className="bg-primary/10 border border-primary/30 rounded-2xl p-3.5 flex flex-col justify-between">
+                      <span className="text-[11px] font-bold text-primary uppercase tracking-wider block flex items-center gap-1">
+                        <Zap size={12} className="text-primary" /> Kebutuhan energi harian
+                      </span>
+                      <span className="text-xl font-black text-primary block my-1">
+                        ≈ {Math.round(result.tdee)}{" "}
+                        <span className="text-xs font-bold text-primary/80">
+                          kcal/hari
+                        </span>
+                      </span>
+                      <span className="text-[10px] text-text-muted">
+                        Total energi harian (TDEE)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Makronutrien Section */}
+                  <div className="bg-background-base/60 border border-card-border rounded-2xl p-4">
+                    <p className="text-xs font-black text-text-light mb-3 flex items-center gap-1.5">
+                      <Utensils size={14} className="text-primary" /> Rekomendasi Asupan Makronutrien
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      {/* Protein */}
+                      <div className="bg-card-dark/80 border border-card-border/80 rounded-xl p-2.5 flex flex-col justify-between">
+                        <span className="text-[10px] uppercase font-black text-text-muted block">
+                          Protein
+                        </span>
+                        <span className="text-base sm:text-lg font-black text-text-light block my-0.5">
+                          ≈ {Math.round(result.protein)} <span className="text-[10px] font-bold text-text-muted">g/hari</span>
+                        </span>
+                        <span className="text-[9px] text-text-muted/70 block">
+                          BB × 1.4 g
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between border-b border-card-border/60 pb-2.5">
-                        <span className="text-xs font-bold text-text-muted">
-                          ⚡ TDEE (Kebutuhan Harian)
+                      {/* Lemak */}
+                      <div className="bg-card-dark/80 border border-card-border/80 rounded-xl p-2.5 flex flex-col justify-between">
+                        <span className="text-[10px] uppercase font-black text-text-muted block">
+                          Lemak
                         </span>
-                        <span className="text-sm font-black text-text-light">
-                          {result.tdee}{" "}
-                          <span className="text-[10px] text-text-muted font-bold">
-                            kkal/hari
-                          </span>
+                        <span className="text-base sm:text-lg font-black text-text-light block my-0.5">
+                          ≈ {Math.round(result.lemak)} <span className="text-[10px] font-bold text-text-muted">g/hari</span>
+                        </span>
+                        <span className="text-[9px] text-text-muted/70 block">
+                          30% TDEE
                         </span>
                       </div>
 
-                      <div className="bg-primary/10 border border-primary/25 rounded-xl p-3 flex items-center justify-between">
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wider font-black text-primary">
-                            Target Asupan Kalori
-                          </p>
-                          <p className="text-xs font-bold text-text-muted">
-                            {result.jenis_target}
-                          </p>
-                        </div>
-                        <span className="text-xl font-black text-primary">
-                          {result.target_kalori}{" "}
-                          <span className="text-xs font-bold text-primary/70">
-                            kkal
-                          </span>
+                      {/* Karbohidrat */}
+                      <div className="bg-card-dark/80 border border-card-border/80 rounded-xl p-2.5 flex flex-col justify-between">
+                        <span className="text-[10px] uppercase font-black text-text-muted block">
+                          Karbohidrat
+                        </span>
+                        <span className="text-base sm:text-lg font-black text-text-light block my-0.5">
+                          ≈ {Math.round(result.karbohidrat)} <span className="text-[10px] font-bold text-text-muted">g/hari</span>
+                        </span>
+                        <span className="text-[9px] text-primary font-bold block">
+                          sisa kalori
                         </span>
                       </div>
                     </div>
-                  )}
+                    <p className="text-[10px] text-text-muted/80 text-center mt-2.5 italic">
+                      * Karbohidrat dihitung dari sisa kalori
+                    </p>
+                  </div>
 
                   {/* Penjelasan Istilah Kalori (BMR & TDEE) */}
                   <div className="mt-4 bg-background-base/40 border border-card-border/60 rounded-2xl p-4 text-left space-y-2.5">
                     <p className="text-xs font-black text-text-light flex items-center gap-1.5 border-b border-card-border/40 pb-2">
                       <Lightbulb size={14} className="text-primary" /> Panduan
-                      Istilah Kalori:
+                      Istilah Kesehatan:
                     </p>
                     <div className="text-[11px] leading-relaxed text-text-muted space-y-1.5">
                       <p>
@@ -504,26 +580,19 @@ export default function KalkulatorBMIPage() {
                       </p>
                       <p>
                         <strong className="text-text-light font-bold">
-                          ⚡ TDEE (Total Energy Expenditure):
+                          ⚡ Kebutuhan Energi Harian (TDEE):
                         </strong>{" "}
-                        Total kalori harian nyata yang Anda bakar setelah
+                        Total kalori harian nyata yang Anda butuhkan setelah
                         memperhitungkan olahraga & aktivitas fisik harian.
                       </p>
                       <p>
                         <strong className="text-text-light font-bold">
-                          🎯 Target Kalori:
+                          ⚖️ Kisaran Berat Berdasarkan BMI:
                         </strong>{" "}
-                        Rekomendasi asupan makan harian agar berat badan Anda
-                        ideal (defisit untuk turun, surplus untuk naik).
+                        Rentang berat badan normal (BMI 18.5 – 24.9) yang direkomendasikan untuk tinggi badan Anda.
                       </p>
                     </div>
                   </div>
-
-                  <p className="text-text-muted text-xs leading-relaxed text-center mt-4">
-                    Asupan {result.target_kalori ?? 2000} kkal/hari akan
-                    membantu Anda mencapai berat badan ideal secara bertahap dan
-                    aman.
-                  </p>
                 </div>
               ) : (
                 <div className="text-center">
@@ -533,13 +602,17 @@ export default function KalkulatorBMIPage() {
                     >
                       {previewStatus}
                     </span>
-                    <p className="text-sm font-black text-primary mb-2">
-                      BMI: {previewBMI}
+                    <p className="text-sm font-black text-primary mt-2">
+                      BMI: ≈ {previewBMI}
                     </p>
+                    <div className="flex justify-center gap-4 text-xs text-text-muted mt-2">
+                      <span>Tinggi: <strong className="text-text-light">{tinggi} cm</strong></span>
+                      <span>Berat: <strong className="text-text-light">{berat} kg</strong></span>
+                    </div>
                   </div>
                   <p className="text-text-muted text-sm">
                     Pilih usia & aktivitas harian lalu tekan tombol hitung untuk
-                    melihat kebutuhan kalori harian Anda.
+                    melihat rincian BMR, kebutuhan energi harian, dan rekomendasi makronutrien lengkap Anda.
                   </p>
                 </div>
               )}
@@ -633,7 +706,7 @@ export default function KalkulatorBMIPage() {
         {/* ── Rekomendasi Menu & Meal Plan Breakdown ── */}
         {(result || true) &&
           (() => {
-            const targetTotal = result?.target_kalori ?? 2000;
+            const targetTotal = result?.tdee ? Math.round(result.tdee) : 2000;
             const sarapanKkal = Math.round(targetTotal * 0.25);
             const siangKkal = Math.round(targetTotal * 0.4);
             const malamKkal = Math.round(targetTotal * 0.35);
@@ -656,8 +729,8 @@ export default function KalkulatorBMIPage() {
                       Rekomendasi Menu Diet: {result?.status ?? previewStatus}
                     </h2>
                     <p className="text-text-muted text-sm mt-1">
-                      Nutrisi khusus untuk mendukung target kalori Harian Anda (
-                      {targetTotal} kkal/hari).
+                      Nutrisi seimbang untuk mendukung kebutuhan energi harian Anda (
+                      {targetTotal} kcal/hari).
                     </p>
                   </div>
                   <Link

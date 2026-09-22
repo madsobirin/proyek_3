@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
+import { hitungAnalisisKesehatan } from "@/lib/kesehatan";
 
 export async function POST(request: Request) {
   try {
@@ -33,68 +34,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hitung BMI
-    const bmi = berat / Math.pow(tinggi / 100, 2);
-    const bmiRounded = parseFloat(bmi.toFixed(1));
+    // Hitung Analisis Kesehatan & Nutrisi dengan presisi penuh
+    const hasil = hitungAnalisisKesehatan({
+      tinggi,
+      berat,
+      gender: sex,
+      usia: age,
+      aktivitas: activityKey,
+    });
 
-    // Tentukan status
-    let status: string;
-    if (bmi < 18.5) status = "Kurus";
-    else if (bmi < 25) status = "Normal";
-    else if (bmi < 30) status = "Berlebih";
-    else status = "Obesitas";
-
-    // Hitung BMR (Mifflin-St Jeor)
-    let bmr =
-      10 * berat + 6.25 * tinggi - 5 * age + (sex === "wanita" ? -161 : 5);
-    bmr = Math.round(bmr);
-
-    // Multiplier Aktivitas
-    let multiplier = 1.55;
-    if (activityKey === "rebahan" || activityKey === "sedentary")
-      multiplier = 1.2;
-    else if (activityKey === "ringan") multiplier = 1.375;
-    else if (activityKey === "sedang") multiplier = 1.55;
-    else if (activityKey === "berat") multiplier = 1.725;
-
-    const tdee = Math.round(bmr * multiplier);
-
-    // Target Kalori berdasarkan status BMI
-    let target_kalori = tdee;
-    let jenis_target = "Maintenance";
-    if (status === "Berlebih" || status === "Obesitas") {
-      target_kalori = Math.max(1200, tdee - 500);
-      jenis_target = "Defisit Kalori (-500 kkal)";
-    } else if (status === "Kurus") {
-      target_kalori = tdee + 400;
-      jenis_target = "Surplus Kalori (+400 kkal)";
-    }
-
-    // Simpan ke DB kalau user login
+    // Simpan ke DB kalau user login (snapshot input dan hasil)
     const auth = await getAuthUser(request);
     if (auth?.userId) {
-      // Gunakan transaction agar insert riwayat dan update profil selalu sinkron
       await prisma.$transaction([
         prisma.perhitungan.create({
           data: {
             user_id: auth.userId,
             tinggi_badan: tinggi,
             berat_badan: berat,
-            bmi: bmiRounded,
-            status,
-            gender: sex,
             usia: age,
+            gender: sex,
             aktivitas: activityKey,
-            bmr,
-            tdee,
-            target_kalori,
+            bmi: hasil.bmi,
+            status: hasil.status,
+            bmr: hasil.bmr,
+            tdee: hasil.tdee,
+            berat_min: hasil.berat_min,
+            berat_max: hasil.berat_max,
+            protein: hasil.protein,
+            karbohidrat: hasil.karbohidrat,
+            lemak: hasil.lemak,
           },
         }),
-        // Otomatis update profil (Best Practice)
+        // Otomatis sinkronkan profil user saat ini (snapshot riwayat tetap tidak berubah)
         prisma.account.update({
           where: { id: auth.userId },
           data: {
-            // Karena di Account.prisma tipe data-nya Int?, kita round dulu
             weight: Math.round(berat),
             height: Math.round(tinggi),
           },
@@ -104,15 +79,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        bmi: bmiRounded,
-        status,
-        bmr,
-        tdee,
-        target_kalori,
-        jenis_target,
+        bmi: hasil.bmi,
+        status: hasil.status,
+        bmr: hasil.bmr,
+        tdee: hasil.tdee,
+        berat_min: hasil.berat_min,
+        berat_max: hasil.berat_max,
+        protein: hasil.protein,
+        lemak: hasil.lemak,
+        karbohidrat: hasil.karbohidrat,
         gender: sex,
         usia: age,
         aktivitas: activityKey,
+        tinggi_badan: tinggi,
+        berat_badan: berat,
       },
       { status: 200 },
     );
@@ -138,7 +118,31 @@ export async function GET(request: Request) {
       take: 10,
     });
 
-    return NextResponse.json(history);
+    // Pastikan seluruh riwayat memiliki snapshot nilai lengkap
+    const formattedHistory = history.map((item) => {
+      if (item.berat_min != null && item.protein != null && item.lemak != null && item.karbohidrat != null) {
+        return item;
+      }
+      const calc = hitungAnalisisKesehatan({
+        tinggi: item.tinggi_badan,
+        berat: item.berat_badan,
+        gender: item.gender ?? "pria",
+        usia: item.usia ?? 25,
+        aktivitas: item.aktivitas ?? "sedang",
+      });
+      return {
+        ...item,
+        berat_min: item.berat_min ?? calc.berat_min,
+        berat_max: item.berat_max ?? calc.berat_max,
+        protein: item.protein ?? calc.protein,
+        lemak: item.lemak ?? calc.lemak,
+        karbohidrat: item.karbohidrat ?? calc.karbohidrat,
+        bmr: item.bmr ?? calc.bmr,
+        tdee: item.tdee ?? calc.tdee,
+      };
+    });
+
+    return NextResponse.json(formattedHistory);
   } catch (error) {
     console.error("PERHITUNGAN_GET_ERROR:", error);
     return NextResponse.json(
