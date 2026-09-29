@@ -180,7 +180,7 @@ function KartuRiwayatDigital({
                   style={{
                     padding: "10px 8px",
                     textAlign: "left",
-                    color: "#00ff7f",
+                    color: "#00cc66",
                     fontSize: "11px",
                     fontWeight: 900,
                     textTransform: "uppercase",
@@ -219,7 +219,7 @@ function KartuRiwayatDigital({
                   <td
                     style={{
                       padding: "10px 8px",
-                      color: "#00ff7f",
+                      color: "#00cc66",
                       fontWeight: 900,
                     }}
                   >
@@ -270,7 +270,7 @@ function KartuRiwayatDigital({
                   fontSize: "18px",
                   fontWeight: 900,
                   margin: "4px 0 0 0",
-                  color: deltaBerat < 0 ? "#00ff7f" : "#f87171",
+                  color: deltaBerat < 0 ? "#00cc66" : "#f87171",
                 }}
               >
                 {deltaBerat >= 0 ? "+" : ""}
@@ -315,7 +315,7 @@ function KartuRiwayatDigital({
                 style={{
                   fontSize: "18px",
                   fontWeight: 900,
-                  color: "#00ff7f",
+                  color: "#00cc66",
                   margin: "4px 0 0 0",
                 }}
               >
@@ -1005,12 +1005,12 @@ export default function BMIRiwayatChart({
                     >
                       <stop
                         offset="0%"
-                        stopColor="var(--color-primary, #00ff7f)"
+                        stopColor="var(--color-primary, #00cc66)"
                         stopOpacity="0.35"
                       />
                       <stop
                         offset="100%"
-                        stopColor="var(--color-primary, #00ff7f)"
+                        stopColor="var(--color-primary, #00cc66)"
                         stopOpacity="0.0"
                       />
                     </linearGradient>
@@ -1067,7 +1067,7 @@ export default function BMIRiwayatChart({
                     <path
                       d={linePathD}
                       fill="none"
-                      stroke="var(--color-primary, #00ff7f)"
+                      stroke="var(--color-primary, #00cc66)"
                       strokeWidth="3.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1089,7 +1089,7 @@ export default function BMIRiwayatChart({
                             cx={p.x}
                             cy={p.y}
                             r="10"
-                            fill="var(--color-primary, #00ff7f)"
+                            fill="var(--color-primary, #00cc66)"
                             fillOpacity="0.25"
                             className="animate-ping"
                           />
@@ -1099,7 +1099,7 @@ export default function BMIRiwayatChart({
                           cy={p.y}
                           r={isHovered ? "6.5" : "4.5"}
                           fill="var(--color-background-dark, #0d131a)"
-                          stroke="var(--color-primary, #00ff7f)"
+                          stroke="var(--color-primary, #00cc66)"
                           strokeWidth={isHovered ? "3" : "2.5"}
                         />
                         {(() => {

@@ -6,8 +6,8 @@
 
 @theme {
   /* Primary brand colors */
-  --color-primary: #00ff7f;
-  --color-primary-hover: #00cc66;
+  --color-primary: #00cc66;
+  --color-primary-hover: #00b359;
 
   /* Fonts */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -94,7 +94,7 @@
   --card-foreground: #f0fff4;
 
   /* Primary */
-  --primary: #00ff7f;
+  --primary: #00cc66;
   --primary-foreground: #031f14;
 
   /* Secondary */
@@ -116,7 +116,7 @@
   --border: #0d422e;
   --border-2: #2b61d4;
   --input: rgba(255, 255, 255, 0.1);
-  --ring: #00ff7f;
+  --ring: #00cc66;
 
   /* Custom FitLife tokens – dark */
   --color-background-base: #031f14;
@@ -216,7 +216,7 @@
 
 .dark .prose:not(.admin-prose) blockquote {
   color: var(--muted-foreground);
-  border-left-color: #00ff7f;
+  border-left-color: #00cc66;
 }
 
 .dark .prose:not(.admin-prose) hr {
