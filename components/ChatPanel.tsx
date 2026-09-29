@@ -177,7 +177,9 @@ export default function ChatPanel({
           {
             id: crypto.randomUUID(),
             role: "assistant",
-            content: "Maaf, server AI sedang sibuk. Silakan coba lagi.",
+            content:
+              data?.error ||
+              "Maaf, server AI sedang sibuk. Silakan coba lagi.",
             timestamp: new Date(),
             isError: true,
           },
