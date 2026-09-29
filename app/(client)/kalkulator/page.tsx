@@ -148,6 +148,7 @@ const ALL_STATUSES: TargetStatus[] = [
   "Obesitas",
 ];
 
+// HALAMAN UTAMA KALKULATOR BMI
 export default function KalkulatorBMIPage() {
   const [gender, setGender] = useState<"pria" | "wanita">("pria");
   const [tinggi, setTinggi] = useState(170);
