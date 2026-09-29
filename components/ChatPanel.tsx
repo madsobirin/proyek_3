@@ -146,10 +146,15 @@ export default function ChatPanel({
     setTyping(true);
 
     try {
-      const chatHistory = [...messages, userMsg].map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const chatHistory = [
+        ...messages.filter((m) => m.id !== "welcome"),
+        userMsg,
+      ]
+        .slice(-4)
+        .map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
 
       const res = await fetch("/api/chat", {
         method: "POST",
