@@ -1,16 +1,10 @@
 allowBuilds:
   '@prisma/engines': true
+  core-js: true
   esbuild: true
   msw: true
   prisma: true
   sharp: true
   unrs-resolver: true
-ignoredBuiltDependencies:
-  - '@prisma/engines'
-  - msw
-  - prisma
-  - sharp
-  - unrs-resolver
-
 overrides:
   '@tiptap/pm': 3.22.3
