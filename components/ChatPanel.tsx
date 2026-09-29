@@ -146,10 +146,15 @@ export default function ChatPanel({
     setTyping(true);
 
     try {
-      const chatHistory = [...messages, userMsg].map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const chatHistory = [
+        ...messages.filter((m) => m.id !== "welcome"),
+        userMsg,
+      ]
+        .slice(-4)
+        .map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
 
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -177,7 +182,9 @@ export default function ChatPanel({
           {
             id: crypto.randomUUID(),
             role: "assistant",
-            content: "Maaf, server AI sedang sibuk. Silakan coba lagi.",
+            content:
+              data?.error ||
+              "Maaf, server AI sedang sibuk. Silakan coba lagi.",
             timestamp: new Date(),
             isError: true,
           },
