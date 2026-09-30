@@ -27,11 +27,52 @@ const MapView = dynamic(() => import("@/components/client/LokasiMap"), {
 type Lokasi = {
   id: number;
   name: string;
+  category?: string;
   address: string | null;
   latitude: number | null;
   longitude: number | null;
-  created_at: string | null;
-  account: { name: string | null };
+  created_at?: string | null;
+  account?: { name: string | null };
+};
+
+const CATEGORY_FILTER_OPTIONS = [
+  { id: "", label: "Semua Lokasi", bmiNote: "Semua Kategori" },
+  {
+    id: "gym",
+    label: "🏋️ Fitness Center / Gym",
+    bmiNote: "Rekomendasi Underweight (Kurus)",
+  },
+  {
+    id: "lapangan",
+    label: "🏟️ Lapangan & Komunitas",
+    bmiNote: "Rekomendasi Normal",
+  },
+  {
+    id: "low_impact",
+    label: "🏊 Low-Impact (Jogging / Kolam Renang)",
+    bmiNote: "Rekomendasi Overweight / Obesitas",
+  },
+] as const;
+
+const CATEGORY_CARD_BADGE: Record<
+  string,
+  { label: string; bmiLabel: string; className: string }
+> = {
+  gym: {
+    label: "🏋️ Fitness Center / Gym",
+    bmiLabel: "Underweight",
+    className: "bg-yellow-500/15 text-yellow-300 border-yellow-500/30",
+  },
+  lapangan: {
+    label: "🏟️ Lapangan / Komunitas",
+    bmiLabel: "Normal",
+    className: "bg-primary/15 text-primary border-primary/30",
+  },
+  low_impact: {
+    label: "🏊 Low-Impact (Jogging / Renang)",
+    bmiLabel: "Overweight / Obesitas",
+    className: "bg-sky-500/15 text-sky-300 border-sky-500/30",
+  },
 };
 
 export default function LokasiOlahragaPage() {
@@ -39,6 +80,7 @@ export default function LokasiOlahragaPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [selectedLocation, setSelectedLocation] = useState<Lokasi | null>(null);
   const [userPosition, setUserPosition] = useState<[number, number] | null>(
@@ -68,11 +110,32 @@ export default function LokasiOlahragaPage() {
     }
   }, []);
 
+  // Read initial ?category= or ?target= from URL if present
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const cat = sp.get("category");
+      const target = sp.get("target");
+      if (cat && ["gym", "lapangan", "low_impact"].includes(cat)) {
+        setSelectedCategory(cat);
+      } else if (target) {
+        const mapTarget: Record<string, string> = {
+          Kurus: "gym",
+          Normal: "lapangan",
+          Berlebih: "low_impact",
+          Obesitas: "low_impact",
+        };
+        if (mapTarget[target]) setSelectedCategory(mapTarget[target]);
+      }
+    }
+  }, []);
+
   const fetchLocations = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (debouncedSearch) params.set("search", debouncedSearch);
+      if (selectedCategory) params.set("category", selectedCategory);
 
       const res = await fetch(`/api/lokasi-olahraga?${params.toString()}`, {
         cache: "no-store",
@@ -86,7 +149,7 @@ export default function LokasiOlahragaPage() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, selectedCategory]);
 
   useEffect(() => {
     fetchLocations();
@@ -183,6 +246,40 @@ export default function LokasiOlahragaPage() {
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Category Filter Pills (Rekomendasi Kategori BMI) */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            {CATEGORY_FILTER_OPTIONS.map((opt) => {
+              const active = selectedCategory === opt.id;
+              return (
+                <button
+                  key={opt.id || "all"}
+                  onClick={() => {
+                    setSelectedCategory(opt.id);
+                    setSelectedLocation(null);
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
+                    active
+                      ? "bg-primary text-background-dark border-primary shadow-[0_0_14px_rgba(0,255,127,0.3)]"
+                      : "bg-card-dark/80 text-text-muted border-card-border hover:text-text-light hover:border-primary/30"
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                  {opt.id && (
+                    <span
+                      className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-md ${
+                        active
+                          ? "bg-background-dark/20 text-background-dark font-black"
+                          : "bg-background-base text-text-muted"
+                      }`}
+                    >
+                      {opt.bmiNote.replace("Rekomendasi ", "")}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* View toggle + Add button */}
@@ -328,6 +425,24 @@ export default function LokasiOlahragaPage() {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                  CATEGORY_CARD_BADGE[loc.category || "lapangan"]
+                                    ?.className ||
+                                  CATEGORY_CARD_BADGE.lapangan.className
+                                }`}
+                              >
+                                {CATEGORY_CARD_BADGE[loc.category || "lapangan"]
+                                  ?.label ||
+                                  CATEGORY_CARD_BADGE.lapangan.label}
+                              </span>
+                              <span className="text-[10px] text-text-muted font-semibold">
+                                • BMI:{" "}
+                                {CATEGORY_CARD_BADGE[loc.category || "lapangan"]
+                                  ?.bmiLabel || "Normal"}
+                              </span>
+                            </div>
                             <h3 className="font-black text-text-light text-base leading-snug group-hover:text-primary transition-colors line-clamp-1">
                               {loc.name}
                             </h3>

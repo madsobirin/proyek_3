@@ -10,6 +10,10 @@ const LokasiSchema = z.object({
     .min(3, "Nama lokasi minimal 3 karakter")
     .max(200, "Nama lokasi maksimal 200 karakter")
     .trim(),
+  category: z
+    .enum(["gym", "lapangan", "low_impact"])
+    .optional()
+    .default("lapangan"),
   address: z
     .string()
     .max(500, "Alamat maksimal 500 karakter")
@@ -20,20 +24,36 @@ const LokasiSchema = z.object({
   longitude: z.number().min(-180).max(180).optional().nullable(),
 });
 
+const TARGET_TO_CATEGORY: Record<string, string> = {
+  Kurus: "gym",
+  Normal: "lapangan",
+  Berlebih: "low_impact",
+  Obesitas: "low_impact",
+};
+
 // GET — ambil semua lokasi olahraga (publik)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
+    const categoryParam = searchParams.get("category")?.trim() || "";
+    const targetParam = searchParams.get("target")?.trim() || "";
 
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: "insensitive" as const } },
-            { address: { contains: search, mode: "insensitive" as const } },
-          ],
-        }
-      : {};
+    const resolvedCategory =
+      categoryParam || (targetParam ? TARGET_TO_CATEGORY[targetParam] : "");
+
+    const where: Record<string, unknown> = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" as const } },
+        { address: { contains: search, mode: "insensitive" as const } },
+      ];
+    }
+
+    if (resolvedCategory && ["gym", "lapangan", "low_impact"].includes(resolvedCategory)) {
+      where.category = resolvedCategory;
+    }
 
     const locations = await prisma.lokasiOlahraga.findMany({
       where,

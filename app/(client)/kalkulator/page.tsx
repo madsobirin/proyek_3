@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {
   SlidersHorizontal,
   BarChart2,
@@ -20,11 +21,23 @@ import {
   Sparkles,
   Zap,
   Activity,
+  MapPin,
+  Navigation,
+  Dumbbell,
 } from "lucide-react";
 import BMIRiwayatChart, {
   PerhitunganItem,
 } from "@/components/client/BMIRiwayatChart";
 import { hitungAnalisisKesehatan } from "@/lib/kesehatan";
+
+const MapView = dynamic(() => import("@/components/client/LokasiMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-card-dark rounded-2xl border border-card-border">
+      <Loader2 className="w-6 h-6 text-primary animate-spin" />
+    </div>
+  ),
+});
 
 type TargetStatus = "Kurus" | "Normal" | "Berlebih" | "Obesitas";
 
@@ -51,6 +64,80 @@ type Menu = {
   gambar: string;
   target_status: TargetStatus;
 };
+
+type LokasiOlahragaItem = {
+  id: number;
+  name: string;
+  category?: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  created_at?: string | null;
+  account?: { name: string | null };
+};
+
+const SPORTS_RECOMMENDATION_CONFIG: Record<
+  TargetStatus,
+  {
+    category: "gym" | "lapangan" | "low_impact";
+    title: string;
+    facilityBadge: string;
+    bmiBadge: string;
+    desc: string;
+    activities: string[];
+  }
+> = {
+  Kurus: {
+    category: "gym",
+    title: "Rekomendasi Fitness Center & Gym",
+    facilityBadge: "🏋️ Fitness Center / Gym",
+    bmiBadge: "Underweight (Kurus)",
+    desc: "Untuk kategori Underweight, disarankan fokus pada latihan beban (strength/resistance training) di gym guna membangun massa otot secara optimal.",
+    activities: ["Weight Training", "Resistance Machine", "Bodyweight Strength"],
+  },
+  Normal: {
+    category: "lapangan",
+    title: "Rekomendasi Lapangan & Komunitas Olahraga",
+    facilityBadge: "🏟️ Lapangan / Komunitas",
+    bmiBadge: "Normal (Ideal)",
+    desc: "Untuk kategori Normal, pertahankan kebugaran kardiovaskular dan kelincahan tubuh melalui olahraga permainan di lapangan atau komunitas olahraga.",
+    activities: ["Futsal / Sepak Bola", "Badminton / Basket", "Komunitas Lari"],
+  },
+  Berlebih: {
+    category: "low_impact",
+    title: "Rekomendasi Fasilitas Low-Impact (Jogging & Kolam Renang)",
+    facilityBadge: "🏊 Fasilitas Low-Impact",
+    bmiBadge: "Overweight (Berlebih)",
+    desc: "Untuk kategori Overweight, pilih fasilitas olahraga low-impact seperti jalur jogging atau kolam renang untuk membakar kalori secara efektif tanpa membebani persendian.",
+    activities: ["Berenang", "Jalan Cepat / Jogging Track", "Sepeda Statis"],
+  },
+  Obesitas: {
+    category: "low_impact",
+    title: "Rekomendasi Fasilitas Low-Impact (Jogging & Kolam Renang)",
+    facilityBadge: "🏊 Fasilitas Low-Impact",
+    bmiBadge: "Obesitas",
+    desc: "Untuk kategori Obesitas, sangat dianjurkan memulai aktivitas fisik di fasilitas low-impact seperti kolam renang atau jalur jalan santai agar aman bagi sendi lutut dan pergelangan kaki.",
+    activities: ["Berenang / Akuatik", "Jalan Santai di Taman/Track", "Stretching"],
+  },
+};
+
+function getDistanceKm(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
 
 const AKTIVITAS_OPTIONS = [
   {
@@ -166,6 +253,15 @@ export default function KalkulatorBMIPage() {
   const [mealTab, setMealTab] = useState<
     "semua" | "sarapan" | "siang" | "malam"
   >("semua");
+  const [sportsLocations, setSportsLocations] = useState<LokasiOlahragaItem[]>(
+    [],
+  );
+  const [loadingLocations, setLoadingLocations] = useState(false);
+  const [selectedLocation, setSelectedLocation] =
+    useState<LokasiOlahragaItem | null>(null);
+  const [userPosition, setUserPosition] = useState<[number, number] | null>(
+    null,
+  );
 
   const fetchHistory = async () => {
     try {
@@ -178,6 +274,41 @@ export default function KalkulatorBMIPage() {
       console.error("Failed to fetch calculation history:", err);
     }
   };
+
+  const fetchRecommendedLocations = useCallback(
+    async (statusTarget: TargetStatus) => {
+      setLoadingLocations(true);
+      try {
+        const res = await fetch(
+          `/api/lokasi-olahraga?target=${encodeURIComponent(statusTarget)}`,
+          { cache: "no-store" },
+        );
+        if (res.ok) {
+          const data: LokasiOlahragaItem[] = await res.json();
+          setSportsLocations(data);
+          setSelectedLocation(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch sports locations:", err);
+      } finally {
+        setLoadingLocations(false);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserPosition([pos.coords.latitude, pos.coords.longitude]);
+        },
+        () => {
+          setUserPosition([-6.326, 108.32]);
+        },
+      );
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -202,6 +333,11 @@ export default function KalkulatorBMIPage() {
   });
   const previewBMI = parseFloat(preview.bmi.toFixed(1));
   const previewStatus: TargetStatus = preview.status;
+  const activeStatus: TargetStatus = result?.status ?? previewStatus;
+
+  useEffect(() => {
+    fetchRecommendedLocations(activeStatus);
+  }, [activeStatus, fetchRecommendedLocations]);
 
   const handleHitung = async () => {
     setLoading(true);
@@ -232,6 +368,8 @@ export default function KalkulatorBMIPage() {
           setMenus(menuData.slice(0, 3));
         }
         setLoadingMenus(false);
+        // Fetch lokasi olahraga sesuai kategori BMI
+        fetchRecommendedLocations(data.status);
       }
     } catch {
     } finally {
@@ -901,6 +1039,181 @@ export default function KalkulatorBMIPage() {
               </div>
             );
           })()}
+
+        {/* ── Rekomendasi Peta Lokasi Olahraga Berdasarkan Kategori BMI ── */}
+        {(() => {
+          const sportCfg = SPORTS_RECOMMENDATION_CONFIG[activeStatus];
+          const sortedSportsLocations = [...sportsLocations].sort((a, b) => {
+            if (!userPosition || a.latitude == null || b.latitude == null)
+              return 0;
+            const distA = getDistanceKm(
+              userPosition[0],
+              userPosition[1],
+              a.latitude,
+              a.longitude!,
+            );
+            const distB = getDistanceKm(
+              userPosition[0],
+              userPosition[1],
+              b.latitude,
+              b.longitude!,
+            );
+            return distA - distB;
+          });
+
+          return (
+            <div className="mt-14 pt-10 border-t border-card-border">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-[11px] font-black uppercase tracking-wider mb-2">
+                    <Dumbbell size={12} />
+                    {sportCfg.facilityBadge} • Kategori {sportCfg.bmiBadge}
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-text-light flex items-center gap-2">
+                    <MapPin size={20} className="text-primary shrink-0" />
+                    {sportCfg.title}
+                  </h2>
+                  <p className="text-text-muted text-sm mt-1 max-w-2xl leading-relaxed">
+                    {sportCfg.desc}
+                  </p>
+                </div>
+                <Link
+                  href={`/lokasi?target=${activeStatus}`}
+                  className="text-primary text-sm font-black flex items-center gap-1.5 hover:gap-2.5 transition-all whitespace-nowrap"
+                >
+                  Eksplor Peta Lengkap <ArrowRight size={14} />
+                </Link>
+              </div>
+
+              {/* Aktivitas yang Disarankan */}
+              <div className="flex flex-wrap items-center gap-2 mb-6">
+                <span className="text-xs font-bold text-text-muted mr-1">
+                  Fokus Olahraga:
+                </span>
+                {sportCfg.activities.map((act) => (
+                  <span
+                    key={act}
+                    className="px-3 py-1 rounded-xl bg-card-dark border border-card-border text-text-light text-xs font-semibold"
+                  >
+                    ✓ {act}
+                  </span>
+                ))}
+              </div>
+
+              {loadingLocations ? (
+                <div className="flex items-center justify-center py-16 bg-card-dark border border-card-border rounded-3xl">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-7 h-7 text-primary animate-spin" />
+                    <span className="text-xs text-text-muted">
+                      Memuat peta rekomendasi tempat olahraga...
+                    </span>
+                  </div>
+                </div>
+              ) : sortedSportsLocations.length === 0 ? (
+                <div className="text-center py-12 text-text-muted text-sm bg-card-dark/40 border border-card-border rounded-2xl">
+                  Belum ada data lokasi untuk kategori{" "}
+                  <strong className="text-text-light">
+                    {sportCfg.facilityBadge}
+                  </strong>
+                  .{" "}
+                  <Link
+                    href="/lokasi"
+                    className="text-primary font-bold hover:underline ml-1"
+                  >
+                    Lihat semua lokasi olahraga →
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Interactive Leaflet Map */}
+                  <div className="lg:col-span-7 bg-card-dark border border-card-border rounded-3xl overflow-hidden shadow-xl">
+                    <div className="h-[360px] sm:h-[420px]">
+                      <MapView
+                        locations={sortedSportsLocations}
+                        userPosition={userPosition}
+                        selectedLocation={selectedLocation}
+                        onSelectLocation={setSelectedLocation}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nearest Recommended Locations List */}
+                  <div className="lg:col-span-5 space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                    <div className="flex items-center justify-between px-1 mb-1">
+                      <span className="text-xs font-black uppercase tracking-wider text-text-muted">
+                        Lokasi Terdekat ({sortedSportsLocations.length})
+                      </span>
+                      {userPosition && (
+                        <span className="text-[11px] text-primary font-semibold flex items-center gap-1">
+                          <Navigation size={11} /> Diurutkan dari posisi Anda
+                        </span>
+                      )}
+                    </div>
+                    {sortedSportsLocations.map((loc) => {
+                      const distance =
+                        userPosition &&
+                        loc.latitude != null &&
+                        loc.longitude != null
+                          ? getDistanceKm(
+                              userPosition[0],
+                              userPosition[1],
+                              loc.latitude,
+                              loc.longitude,
+                            )
+                          : null;
+                      const isSel = selectedLocation?.id === loc.id;
+
+                      return (
+                        <button
+                          key={loc.id}
+                          type="button"
+                          onClick={() => setSelectedLocation(loc)}
+                          className={`w-full text-left bg-card-dark border rounded-2xl p-4 transition-all ${
+                            isSel
+                              ? "border-primary shadow-[0_0_20px_rgba(0,255,127,0.12)]"
+                              : "border-card-border hover:border-primary/30"
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${
+                                isSel
+                                  ? "bg-primary text-background-dark"
+                                  : "bg-primary/10 text-primary border border-primary/20"
+                              }`}
+                            >
+                              <MapPin size={16} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <h3 className="font-black text-text-light text-sm truncate">
+                                  {loc.name}
+                                </h3>
+                                {distance !== null && (
+                                  <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold">
+                                    <Navigation size={10} />
+                                    {distance < 1
+                                      ? `${Math.round(distance * 1000)} m`
+                                      : `${distance.toFixed(1)} km`}
+                                  </span>
+                                )}
+                              </div>
+                              {loc.address && (
+                                <p className="text-text-muted text-xs mt-1 line-clamp-2">
+                                  {loc.address}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

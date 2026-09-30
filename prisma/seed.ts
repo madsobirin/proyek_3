@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaClient } from "../generated/prisma/client";
 import { generateMenus } from "./factories/menuFactory";
 import { generateArtikels } from "./factories/artikelFactory";
+import { generateLokasiOlahraga } from "./factories/lokasiFactory";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -34,6 +35,25 @@ async function main() {
     console.log(`   ✓ ${artikel.judul} [${artikel.kategori}]`);
   }
   console.log(`\n✅ ${artikels.length} artikel berhasil dibuat\n`);
+
+  // ── Seed Lokasi Olahraga (Berdasarkan Kategori BMI) ──
+  const adminAcc =
+    (await prisma.account.findFirst({ where: { role: "admin" } })) ||
+    (await prisma.account.findFirst());
+  if (adminAcc) {
+    console.log("📍 Menyimpan data lokasi olahraga...");
+    const lokasiList = generateLokasiOlahraga();
+    for (const lok of lokasiList) {
+      await prisma.lokasiOlahraga.create({
+        data: {
+          ...lok,
+          user_id: adminAcc.id,
+        },
+      });
+      console.log(`   ✓ ${lok.name} [${lok.category}]`);
+    }
+    console.log(`\n✅ ${lokasiList.length} lokasi olahraga berhasil dibuat\n`);
+  }
 
   console.log("🎉 Seeding selesai!");
   console.log(`   Total: ${menus.length} menu + ${artikels.length} artikel`);

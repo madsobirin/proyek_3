@@ -2,6 +2,7 @@ model LokasiOlahraga {
   id          Int      @id @default(autoincrement())
   
   name        String
+  category    String   @default("lapangan")
   address     String?
   latitude    Float?
   longitude   Float?

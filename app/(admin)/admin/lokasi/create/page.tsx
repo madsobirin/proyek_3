@@ -38,6 +38,7 @@ export default function CreateLokasiPage() {
 
   // Form states
   const [formName, setFormName] = useState("");
+  const [formCategory, setFormCategory] = useState<"gym" | "lapangan" | "low_impact">("lapangan");
   const [formAddress, setFormAddress] = useState("");
   const [formLat, setFormLat] = useState("");
   const [formLng, setFormLng] = useState("");
@@ -88,6 +89,7 @@ export default function CreateLokasiPage() {
     try {
       const body: Record<string, unknown> = {
         name: formName.trim(),
+        category: formCategory,
       };
       if (formAddress.trim()) body.address = formAddress.trim();
       if (formLat && formLng) {
@@ -169,6 +171,32 @@ export default function CreateLokasiPage() {
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {errors.name}
                 </p>
               )}
+            </div>
+
+            {/* Kategori Fasilitas (Rekomendasi BMI) */}
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                Kategori Fasilitas (Target BMI) <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formCategory}
+                onChange={(e) =>
+                  setFormCategory(
+                    e.target.value as "gym" | "lapangan" | "low_impact",
+                  )
+                }
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#22c55e] focus:border-transparent text-sm transition-all"
+              >
+                <option value="gym">
+                  🏋️ Fitness Center / Gym (Rekomendasi: Underweight / Kurus)
+                </option>
+                <option value="lapangan">
+                  🏟️ Lapangan / Komunitas Olahraga (Rekomendasi: Normal)
+                </option>
+                <option value="low_impact">
+                  🏊 Low-Impact: Jalur Jogging / Kolam Renang (Rekomendasi: Overweight / Obesitas)
+                </option>
+              </select>
             </div>
 
             {/* Alamat */}
