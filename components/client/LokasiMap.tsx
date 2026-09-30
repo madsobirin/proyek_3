@@ -7,11 +7,30 @@ import "leaflet/dist/leaflet.css";
 type Lokasi = {
   id: number;
   name: string;
+  category?: string;
   address: string | null;
   latitude: number | null;
   longitude: number | null;
-  created_at: string | null;
-  account: { name: string | null };
+  created_at?: string | null;
+  account?: { name: string | null };
+};
+
+const CATEGORY_LABELS: Record<string, { label: string; bg: string; color: string }> = {
+  gym: {
+    label: "🏋️ Fitness Center / Gym",
+    bg: "#fef9c3",
+    color: "#a16207",
+  },
+  lapangan: {
+    label: "🏟️ Lapangan / Komunitas",
+    bg: "#dcfce7",
+    color: "#15803d",
+  },
+  low_impact: {
+    label: "🏊 Low-Impact (Jogging / Renang)",
+    bg: "#e0f2fe",
+    color: "#0369a1",
+  },
 };
 
 type Props = {
@@ -40,11 +59,16 @@ function buildPopup(loc: Lokasi, userPos: [number, number] | null): string {
     const str = d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
     distHtml = `<div style="display:inline-block;background:#dcfce7;padding:2px 8px;border-radius:6px;font-size:11px;color:#16a34a;font-weight:600;margin-bottom:6px;">📍 ${str} dari Anda</div><br/>`;
   }
+  const catInfo = loc.category ? CATEGORY_LABELS[loc.category] : null;
+  const catHtml = catInfo
+    ? `<div style="display:inline-block;background:${catInfo.bg};color:${catInfo.color};padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-bottom:4px;">${catInfo.label}</div>`
+    : "";
   const gmapsUrl =
     loc.latitude != null && loc.longitude != null
       ? `https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`
       : "";
-  return `<div style="font-family:system-ui,sans-serif;min-width:160px;">
+  return `<div style="font-family:system-ui,sans-serif;min-width:170px;">
+    ${catHtml}
     <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:2px;">${loc.name}</div>
     ${loc.address ? `<div style="font-size:11px;color:#666;margin-bottom:6px;">${loc.address}</div>` : ""}
     ${distHtml}

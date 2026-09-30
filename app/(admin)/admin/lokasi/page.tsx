@@ -20,12 +20,28 @@ import LayoutAdmin from "@/components/admin/LayoutAdmin";
 interface Lokasi {
   id: number;
   name: string;
+  category?: string;
   address: string | null;
   latitude: number | null;
   longitude: number | null;
   created_at: string;
   account: { name: string | null };
 }
+
+const CATEGORY_BADGES: Record<string, { label: string; className: string }> = {
+  gym: {
+    label: "Fitness / Gym (Underweight)",
+    className: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  lapangan: {
+    label: "Lapangan / Komunitas (Normal)",
+    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  low_impact: {
+    label: "Low-Impact (Overweight/Obesitas)",
+    className: "bg-sky-50 text-sky-700 border-sky-200",
+  },
+};
 
 const ITEMS_PER_PAGE = 8;
 
@@ -232,7 +248,16 @@ export default function LokasiAdminPage() {
                       <h3 className="font-bold text-gray-900 text-sm truncate">
                         {item.name}
                       </h3>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                      <span
+                        className={`inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                          CATEGORY_BADGES[item.category || "lapangan"]?.className ||
+                          CATEGORY_BADGES.lapangan.className
+                        }`}
+                      >
+                        {CATEGORY_BADGES[item.category || "lapangan"]?.label ||
+                          CATEGORY_BADGES.lapangan.label}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-1">
                         {item.address || "Alamat belum diisi"}
                       </p>
                     </div>
@@ -286,6 +311,7 @@ export default function LokasiAdminPage() {
                       {[
                         "No",
                         "Nama Lokasi",
+                        "Kategori BMI",
                         "Alamat",
                         "Koordinat",
                         "Oleh",
@@ -315,6 +341,17 @@ export default function LokasiAdminPage() {
                           <p className="font-semibold text-gray-900 text-sm">
                             {item.name}
                           </p>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                              CATEGORY_BADGES[item.category || "lapangan"]?.className ||
+                              CATEGORY_BADGES.lapangan.className
+                            }`}
+                          >
+                            {CATEGORY_BADGES[item.category || "lapangan"]?.label ||
+                              CATEGORY_BADGES.lapangan.label}
+                          </span>
                         </td>
                         <td className="px-6 py-5">
                           <p className="text-sm text-gray-600 line-clamp-2 max-w-[200px]">
