@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { MessageCircleMore, X } from "lucide-react";
 import ChatPanel, { PAGE_QUICK_PROMPTS } from "./ChatPanel";
 import type { ChatPageContext } from "./ChatContext";
+import Image from "next/image";
 
 // Mapping pathname → nama halaman yang ditampilkan di badge FitBot
 const PAGE_NAMES: Record<string, string> = {
@@ -64,19 +65,23 @@ export default function ChatButton() {
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setOpen((p) => !p)}
-          className={`relative p-4 rounded-full shadow-[0_0_24px_rgba(0,255,127,0.5)] transition-all duration-300 transform hover:scale-110 flex items-center justify-center group ${
+          className={`relative p-4 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center group cursor-pointer ${
             open
-              ? "bg-card-dark border border-primary/40 text-primary"
-              : "bg-primary hover:bg-primary-hover text-background-dark"
+              ? "bg-white dark:bg-[#0b2017] border border-primary/50 text-primary shadow-[0_0_20px_rgba(0,255,127,0.35)]"
+              : "bg-primary hover:bg-primary-hover text-[#021f14] shadow-[0_0_24px_rgba(0,255,127,0.5)]"
           }`}
         >
           {open ? (
             <X size={22} className="transition-transform" />
           ) : (
-            <MessageCircleMore
-              size={22}
-              className="group-hover:rotate-12 transition-transform"
-            />
+
+          <Image
+            src="/maskot-ai/first.png"
+            alt="Maskot AI"
+            width={30}
+            height={30}
+            className="group-hover:rotate-12 transition-transform"
+          />
           )}
 
           {/* Ping animation saat belum dibuka */}
