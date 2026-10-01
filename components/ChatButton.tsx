@@ -1,12 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { MessageCircleMore, X } from "lucide-react";
-import ChatPanel from "./ChatPanel";
+import ChatPanel, { PAGE_QUICK_PROMPTS } from "./ChatPanel";
+import type { ChatPageContext } from "./ChatContext";
+
+// Mapping pathname → nama halaman yang ditampilkan di badge FitBot
+const PAGE_NAMES: Record<string, string> = {
+  "/": "Beranda",
+  "/kalkulator": "Kalkulator BMI",
+  "/menu": "Menu Sehat",
+  "/artikel": "Artikel",
+  "/lokasi": "Lokasi Olahraga",
+  "/scan-makanan": "Scan Makanan",
+  "/profile": "Profil",
+};
+
+// Mapping pathname → key PAGE_QUICK_PROMPTS
+const PATH_TO_KEY: Record<string, string> = {
+  "/kalkulator": "kalkulator",
+  "/menu": "menu",
+  "/artikel": "artikel",
+  "/lokasi": "lokasi",
+  "/scan-makanan": "scan-makanan",
+  "/profile": "profile",
+};
 
 export default function ChatButton() {
   const [open, setOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -14,10 +38,27 @@ export default function ChatButton() {
       .catch(() => setIsLoggedIn(false));
   }, []);
 
+  // Bangun pageContext otomatis berdasarkan pathname
+  const pageContext = useMemo<ChatPageContext | null>(() => {
+    const pageName = PAGE_NAMES[pathname] ?? null;
+    const key = PATH_TO_KEY[pathname] ?? null;
+    const quickPrompts = key ? PAGE_QUICK_PROMPTS[key] : null;
+    if (!pageName && !quickPrompts) return null;
+    return {
+      pageName: pageName ?? "",
+      quickPrompts: quickPrompts ?? [],
+    };
+  }, [pathname]);
+
   return (
     <>
       {/* Panel Chat */}
-      <ChatPanel open={open} onClose={() => setOpen(false)} isLoggedIn={isLoggedIn} />
+      <ChatPanel
+        open={open}
+        onClose={() => setOpen(false)}
+        isLoggedIn={isLoggedIn}
+        pageContext={pageContext}
+      />
 
       {/* Floating Button */}
       <div className="fixed bottom-6 right-6 z-50">
@@ -50,5 +91,3 @@ export default function ChatButton() {
     </>
   );
 }
-
-
