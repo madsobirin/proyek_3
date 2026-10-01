@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
+import { toast } from "sonner";
 import {
   Bot,
   Send,
@@ -12,6 +13,7 @@ import {
   Heart,
   RefreshCw,
   LogIn,
+  RotateCcw,
 } from "lucide-react";
 
 type Message = {
@@ -21,6 +23,13 @@ type Message = {
   timestamp: Date;
   isError?: boolean;
 };
+
+function generateId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
 
 const QUICK_PROMPTS = [
   { icon: <Scale size={13} />, text: "Cek tinggi & berat badan" },
@@ -97,6 +106,14 @@ const markdownComponents: Components = {
   hr: () => <hr className="border-card-border my-2" />,
 };
 
+const INITIAL_MESSAGE: Message = {
+  id: "welcome",
+  role: "assistant",
+  content:
+    "Halo! Saya FitBot, asisten kesehatan Anda. Saya siap untuk membantu pertanyaan seputar diet, nutrisi, olahraga, dan gaya hidup sehat. Ada yang bisa saya bantu? 😊",
+  timestamp: new Date(),
+};
+
 export default function ChatPanel({
   open,
   onClose,
@@ -106,19 +123,24 @@ export default function ChatPanel({
   onClose: () => void;
   isLoggedIn: boolean;
 }) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content:
-        "Halo! Saya FitBot, asisten kesehatan Anda. Saya siap untuk membantu pertanyaan seputar diet, nutrisi, olahraga, dan gaya hidup sehat. Ada yang bisa saya bantu? 😊",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleResetChat = () => {
+    if (typing) return;
+    setMessages([
+      {
+        ...INITIAL_MESSAGE,
+        timestamp: new Date(),
+      },
+    ]);
+    setInput("");
+    toast.success("Obrolan baru dimulai. Riwayat percakapan telah di-reset.");
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
 
   useEffect(() => {
     if (open) {
@@ -135,7 +157,7 @@ export default function ChatPanel({
     if (!content || typing) return;
 
     const userMsg: Message = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       role: "user",
       content,
       timestamp: new Date(),
@@ -170,7 +192,7 @@ export default function ChatPanel({
         setMessages((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(),
+            id: generateId(),
             role: "assistant",
             content: data.response,
             timestamp: new Date(),
@@ -180,7 +202,7 @@ export default function ChatPanel({
         setMessages((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(),
+            id: generateId(),
             role: "assistant",
             content:
               data?.error ||
@@ -195,7 +217,7 @@ export default function ChatPanel({
       setMessages((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           role: "assistant",
           content: "Koneksi terputus. Pastikan internet aktif.",
           timestamp: new Date(),
@@ -282,12 +304,33 @@ export default function ChatPanel({
                 </p>
               </div>
 
-              <button
-                onClick={onClose}
-                className="p-1.5 rounded-xl text-text-muted hover:text-text-light hover:bg-background-base/50 transition-all"
-              >
-                <X size={16} />
-              </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {isLoggedIn && (
+                  <button
+                    type="button"
+                    onClick={handleResetChat}
+                    disabled={typing || messages.length <= 1}
+                    title="Hapus Chat / Obrolan Baru"
+                    aria-label="Hapus Chat / Obrolan Baru"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-text-muted hover:text-primary hover:bg-primary/10 border border-card-border hover:border-primary/30 transition-all disabled:opacity-30 disabled:pointer-events-none group cursor-pointer"
+                  >
+                    <RotateCcw
+                      size={12}
+                      className="text-primary group-hover:-rotate-90 transition-transform duration-300"
+                    />
+                    <span className="hidden min-[360px]:inline">Obrolan Baru</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  title="Tutup Panel"
+                  className="p-1.5 rounded-xl text-text-muted hover:text-text-light hover:bg-background-base/50 transition-all cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
           </div>
 

@@ -202,6 +202,7 @@ graph TD
 - **Ketahanan Jaringan:** Mekanisme *exponential backoff retry* (3 percobaan) khusus untuk kode status 429 (*rate limit*) dan 503 (*overloaded*).
 - **Injeksi Konteks Dinamis:** Mengekstrak nama, berat, tinggi, tanggal lahir, dan 5 riwayat BMI terakhir pengguna dari database untuk dimasukkan ke system prompt.
 - **Guardrail Keamanan:** Larangan menjawab topik di luar kesehatan/olahraga dan penolakan keras untuk menghasilkan kode pemrograman (*anti-prompt injection*).
+- **Clear Chat / Reset History:** Tombol "Hapus Chat / Obrolan Baru" di header panel obrolan untuk membersihkan percakapan di layar sekaligus me-reset riwayat memory konteks (sehingga input token percakapan kembali ke 0).
 
 ### 8.3 Barcode Scanner & Integrasi Open Food Facts
 - **Validasi Barcode:** Hanya menerima angka 3 hingga 64 digit (`^\d{3,64}$`).
