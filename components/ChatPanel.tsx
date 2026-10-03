@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+
 import Link from "next/link";
 import ReactMarkdown, { type Components } from "react-markdown";
 import { toast } from "sonner";
@@ -27,8 +28,6 @@ import {
   ChevronRight,
   Search,
   Activity,
-  Flame,
-  Clock,
   ExternalLink,
   ChevronDown,
 } from "lucide-react";
@@ -515,10 +514,6 @@ export default function ChatPanel({
                         <span className="text-xs font-black text-text-light dark:text-white">
                           FitLife AI Hub
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] text-primary font-bold bg-primary/10 border border-primary/30 px-2 py-0.5 rounded-full">
-                          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                          Online
-                        </span>
                       </div>
                       <button
                         type="button"
@@ -734,8 +729,14 @@ export default function ChatPanel({
 
                       {/* Bot Avatar */}
                       <div className="relative">
-                        <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/40 flex items-center justify-center">
-                          <Bot size={18} className="text-primary" />
+                        <div className="w-9 h-9 flex items-center justify-center">
+                          <Image
+                            src="/maskot-ai/home-maskot.png"
+                            alt="Bot"
+                            width={30}
+                            height={30}
+                            className="object-contain"
+                          />
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border-2 border-white dark:border-[#0b2017] shadow-[0_0_6px_rgba(0,255,127,0.8)]" />
                       </div>
@@ -743,14 +744,6 @@ export default function ChatPanel({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <p className="text-sm font-black text-text-light dark:text-white">FitBot</p>
-                          <span className="flex items-center gap-0.5 text-[9px] text-primary font-bold bg-primary/10 border border-primary/30 px-1.5 py-0.5 rounded-full">
-                            <Sparkles size={8} className="fill-primary" /> AI Health
-                          </span>
-                          {pageContext?.pageName && (
-                            <span className="text-[9px] text-text-muted dark:text-emerald-200/70 bg-[#f0fdf4] dark:bg-[#071610] border border-card-border dark:border-primary/20 px-1.5 py-0.5 rounded-full truncate max-w-[100px]">
-                              📍 {pageContext.pageName}
-                            </span>
-                          )}
                         </div>
                         <p className="text-[10px] text-text-muted dark:text-emerald-200/70">
                           {typing ? (
@@ -810,8 +803,14 @@ export default function ChatPanel({
                         }}
                       >
                         {msg.role === "assistant" && (
-                          <div className="w-7 h-7 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0 mt-1">
-                            <Bot size={13} className="text-primary" />
+                          <div className="w-7 h-7 flex items-center justify-center shrink-0 mt-1">
+                            <Image
+                              src="/maskot-ai/messages-icon.png"
+                              alt="Bot"
+                              width={30}
+                              height={30}
+                              className="object-contain"
+                            />
                           </div>
                         )}
 
@@ -928,8 +927,14 @@ export default function ChatPanel({
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-primary/70 to-transparent" />
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-primary/15 border border-primary/40 flex items-center justify-center">
-                          <BookOpen size={17} className="text-primary" />
+                        <div className="w-8 h-8 flex items-center justify-center">
+                          <Image
+                            src="/maskot-ai/how-icon.png"
+                            alt="Bot"
+                            width={25}
+                            height={25}
+                            className="object-contain"
+                          />
                         </div>
                         <h2 className="text-sm font-black text-text-light dark:text-white">
                           Pusat Bantuan & Edukasi
