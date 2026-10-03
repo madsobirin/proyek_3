@@ -461,15 +461,15 @@ export default function ChatPanel({
       <div
         className={`fixed z-1050 transition-all duration-300 ease-out
           bottom-20 right-4
-          w-[calc(100vw-2rem)] max-w-[420px]
-          md:bottom-24 md:right-6 md:w-[410px]
+          w-[calc(100vw-2rem)] max-w-[480px]
+          md:bottom-24 md:right-6 md:w-[480px]
           ${
             open
               ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
               : "opacity-0 translate-y-4 scale-95 pointer-events-none"
           }`}
       >
-        <div className="bg-white dark:bg-[#071610] border border-card-border dark:border-primary/30 rounded-3xl shadow-2xl shadow-black/80 overflow-hidden flex flex-col h-[610px] max-h-[85vh] ring-1 ring-black/5 dark:ring-white/10">
+        <div className="bg-white dark:bg-[#071610] border border-card-border dark:border-primary/30 rounded-3xl shadow-2xl shadow-black/80 overflow-hidden flex flex-col h-[700px] max-h-[90vh] ring-1 ring-black/5 dark:ring-white/10">
 
           {/* ───────────────────────────────────────────────────────────── */}
           {/* KONTEN BERDASARKAN TAB AKTIF */}
