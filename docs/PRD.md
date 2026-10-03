@@ -1,7 +1,7 @@
 # Product Requirement Document (PRD) — FitLife
 
 > **Status:** Active / Source of Truth  
-> **Last Updated:** 2026-10-01  
+> **Last Updated:** 2026-10-03  
 > **Repository:** `proyek_3` (FitLife Web & Mobile REST API Service)  
 > **Tech Stack:** Next.js 16 (App Router), TypeScript, Tailwind CSS v4, Prisma ORM, PostgreSQL
 
@@ -248,12 +248,15 @@ graph TD
   - Merender komponen DOM tersembunyi `KartuRiwayatDigital` dengan rasio `scale: 2` untuk hasil visual tajam.
   - Menyertakan judul, rentang tanggal, tabel rekaman, dan kartu ringkasan berat/BMI.
 
-### 8.4 FitBot AI Assistant & Health Hub (`components/ChatPanel.tsx` & `app/api/chat/route.ts`)
+### 8.4 FitBot AI Assistant & Health Hub (`components/ChatPanel.tsx`, `components/ChatButton.tsx` & `app/api/chat/route.ts`)
 - **Penyedia AI:** Groq Cloud API dengan model `qwen/qwen3.8-27b`.
+- **Desain & Dimensi Antarmuka (Optimal Viewing Layout):**
+  - Floating action launcher (`ChatButton.tsx`) menggunakan visual maskot FitLife (`/maskot-ai/first.png`, ukuran 30x30px) dengan efek rotasi interaktif saat hover, status toggle icon silang (`X`), dan animasi ping notification saat belum dibuka.
+  - Container panel chat (`ChatPanel.tsx`) dioptimalkan dengan lebar responsif `w-[calc(100vw-2rem)] max-w-[480px]` dan tinggi `h-[700px] max-h-[90vh]`, sudut melengkung `rounded-3xl`, bayangan pekat `shadow-2xl shadow-black/80`, serta dual-theme background (`bg-white dark:bg-[#071610]`, aksen permukaan `#0b2017` & `#0d261c`, dan ring border emerald).
 - **Struktur Antarmuka 3-Tab:**
-  1. **Tab Home:** Sapaan pengguna, kartu status obrolan terkini, kartu metrik kesehatan realtime (menampilkan skor BMI terkini & TB/BB dari database), tombol konsultasi langsung, pintasan cepat kontekstual, dan navigasi fitur FitLife.
-  2. **Tab Messages:** Obrolan aktif dengan parser Markdown khusus, header dengan indikator halaman aktif (`ChatPageContext`), tombol Reset/Hapus obrolan, error retry button, chip quick prompts, dan disclaimer medis.
-  3. **Tab Help:** Direktori FAQ interaktif dengan kolom pencarian instan dan accordion expandable (topik: BMI, BMR vs TDEE, defisit kalori, protein harian, olahraga low-impact, scan makanan) dilengkapi tombol aksi "Tanyakan ke FitBot".
+  1. **Tab Home:** Menampilkan ilustrasi maskot sambutan (`/maskot-ai/home-maskot.png`), sapaan nama pengguna, kartu status obrolan terkini, kartu metrik kesehatan realtime (skor BMI terkini & TB/BB dari database), tombol konsultasi langsung, pintasan cepat kontekstual, dan navigasi fitur FitLife.
+  2. **Tab Messages:** Obrolan aktif dengan parser Markdown khusus, header visual dengan ikon maskot (`/maskot-ai/messages-icon.png`), indikator halaman aktif (`ChatPageContext`), tombol Reset/Hapus obrolan, error retry button, chip quick prompts, dan disclaimer medis.
+  3. **Tab Help:** Direktori FAQ interaktif berikon panduan (`/maskot-ai/how-icon.png`) dengan kolom pencarian instan dan accordion expandable (topik: BMI, BMR vs TDEE, defisit kalori, protein harian, olahraga low-impact, scan makanan) dilengkapi tombol aksi "Tanyakan ke FitBot".
 - **Arsitektur Konteks Global (`ChatContext.tsx` & `useSetChatContext.ts`):**
   - Masing-masing halaman client dapat mendaftarkan `pageName`, `quickPrompts`, dan `systemHint` khusus ke FitBot widget.
   - Sinkronisasi otomatis berbasis rute di `ChatButton.tsx` (`PAGE_NAMES` & `PAGE_QUICK_PROMPTS`).
