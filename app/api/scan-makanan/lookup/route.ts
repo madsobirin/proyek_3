@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getFoodFromCache, setFoodToCache } from "@/lib/redis";
-import { lookupFatSecret } from "@/lib/fatsecret";
 import { lookupOpenFoodFacts } from "@/lib/openfoodfacts";
 import type { FoodProduct } from "@/lib/types/food";
 
@@ -29,31 +28,17 @@ export async function POST(request: Request) {
     // 1. Cek Redis global cache terlebih dahulu (key: food:barcode:<barcode>)
     const cachedProduct = await getFoodFromCache(barcode);
     if (cachedProduct) {
-      // Cache HIT: langsung return data, JANGAN panggil FatSecret / Open Food Facts
+      // Cache HIT: langsung return data, JANGAN panggil API eksternal
       return NextResponse.json(cachedProduct, {
         headers: { "X-Cache": "HIT" },
       });
     }
 
-    // Cache MISS: 2. Request ke FatSecret sebagai API utama
-    let product: FoodProduct | null = await lookupFatSecret(barcode);
+    // Cache MISS: 2. Request ke Open Food Facts
+    const product: FoodProduct | null = await lookupOpenFoodFacts(barcode);
 
     if (product) {
-      // FatSecret HIT: simpan ke Redis dengan TTL, lalu return
-      await setFoodToCache(barcode, product);
-      return NextResponse.json(product, {
-        headers: {
-          "X-Cache": "MISS",
-          "X-Data-Source": "FatSecret",
-        },
-      });
-    }
-
-    // 3. FatSecret tidak menemukan / gagal: request ke Open Food Facts sebagai fallback
-    product = await lookupOpenFoodFacts(barcode);
-
-    if (product) {
-      // Open Food Facts HIT: normalisasi format, simpan ke Redis dengan TTL, lalu return
+      // Open Food Facts HIT: simpan ke Redis dengan TTL, lalu return
       await setFoodToCache(barcode, product);
       return NextResponse.json(product, {
         headers: {
@@ -63,7 +48,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // 4. Kedua API tidak menemukan produk
+    // 3. Produk tidak ditemukan
     return NextResponse.json(
       { message: "Produk dengan barcode tersebut tidak ditemukan" },
       { status: 404 }
