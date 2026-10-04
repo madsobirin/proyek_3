@@ -1,0 +1,22 @@
+model MasterMakanan {
+  id             Int       @id @default(autoincrement())
+  barcode        String    @unique
+  nama_makanan   String
+  brand          String?
+  image_url      String?
+  kalori         Float?
+  protein        Float?
+  lemak          Float?
+  karbohidrat    Float?
+  gula           Float?
+  source         String    @default("community") // "community" | "openfoodfacts" | "verified"
+  contributor_id Int?
+  scan_count     Int       @default(1)
+  created_at     DateTime? @default(now())
+  updated_at     DateTime? @updatedAt
+
+  contributor Account? @relation("ContributedFoods", fields: [contributor_id], references: [id], onDelete: SetNull)
+
+  @@index([barcode])
+  @@map("master_makanan")
+}

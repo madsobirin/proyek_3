@@ -27,6 +27,7 @@ model Account {
   perhitungan     Perhitungan[]
   lokasiOlahraga  LokasiOlahraga[]
   scanMakanan     ScanMakanan[]
+  contributedFoods MasterMakanan[] @relation("ContributedFoods")
 
   @@map("accounts")
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { setFoodToCache } from "@/lib/redis";
 
 const MAX_TEXT_LENGTH = 500;
 
@@ -63,24 +64,79 @@ export async function POST(request: Request) {
     );
   }
 
+  const brand = optionalText(body.brand);
+  const imageUrl = optionalText(body.image_url);
+  const kalori = nutritionValues[0];
+  const protein = nutritionValues[1];
+  const lemak = nutritionValues[2];
+  const karbohidrat = nutritionValues[3];
+  const gula = nutritionValues[4];
+
   try {
+    // 1. Simpan ke riwayat pribadi pengguna
     const scanMakanan = await prisma.scanMakanan.create({
       data: {
         user_id: auth.userId,
         barcode,
         nama_makanan: namaMakanan.slice(0, MAX_TEXT_LENGTH),
-        brand: optionalText(body.brand),
-        image_url: optionalText(body.image_url),
-        kalori: nutritionValues[0],
-        protein: nutritionValues[1],
-        lemak: nutritionValues[2],
-        karbohidrat: nutritionValues[3],
-        gula: nutritionValues[4],
+        brand,
+        image_url: imageUrl,
+        kalori,
+        protein,
+        lemak,
+        karbohidrat,
+        gula,
       },
     });
 
+    // 2. Simpan / perbarui tabel master produk komunitas
+    const masterMakanan = await prisma.masterMakanan.upsert({
+      where: { barcode },
+      update: {
+        nama_makanan: namaMakanan.slice(0, MAX_TEXT_LENGTH),
+        brand,
+        image_url: imageUrl,
+        kalori,
+        protein,
+        lemak,
+        karbohidrat,
+        gula,
+        scan_count: { increment: 1 },
+      },
+      create: {
+        barcode,
+        nama_makanan: namaMakanan.slice(0, MAX_TEXT_LENGTH),
+        brand,
+        image_url: imageUrl,
+        kalori,
+        protein,
+        lemak,
+        karbohidrat,
+        gula,
+        source: "community",
+        contributor_id: auth.userId,
+      },
+    });
+
+    // 3. Simpan ke Redis cache agar scan berikutnya instan HIT
+    await setFoodToCache(barcode, {
+      barcode,
+      nama_makanan: masterMakanan.nama_makanan,
+      brand: masterMakanan.brand,
+      image_url: masterMakanan.image_url,
+      kalori: masterMakanan.kalori,
+      protein: masterMakanan.protein,
+      lemak: masterMakanan.lemak,
+      karbohidrat: masterMakanan.karbohidrat,
+      gula: masterMakanan.gula,
+      source: masterMakanan.source,
+    });
+
     return NextResponse.json(
-      { message: "Hasil scan berhasil disimpan", data: scanMakanan },
+      {
+        message: "Hasil scan berhasil disimpan dan dibagikan ke komunitas",
+        data: scanMakanan,
+      },
       { status: 201 },
     );
   } catch (error) {
