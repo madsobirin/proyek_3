@@ -1,17 +1,8 @@
 import { NextResponse } from "next/server";
-
-const OPEN_FOOD_FACTS_URL = "https://world.openfoodfacts.org/api/v0/product";
-
-type Nutriments = Record<string, unknown>;
-
-function toNumber(value: unknown): number | null {
-  const parsed = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function getNutrient(nutriments: Nutriments, key: string): number | null {
-  return toNumber(nutriments[`${key}_100g`]) ?? toNumber(nutriments[key]);
-}
+import { getFoodFromCache, setFoodToCache } from "@/lib/redis";
+import { lookupFatSecret } from "@/lib/fatsecret";
+import { lookupOpenFoodFacts } from "@/lib/openfoodfacts";
+import type { FoodProduct } from "@/lib/types/food";
 
 export async function POST(request: Request) {
   let barcode: string;
@@ -22,72 +13,66 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json(
       { message: "Body request harus berupa JSON yang valid" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
-  // EAN/UPC dan barcode Open Food Facts terdiri dari angka. Pembatasan ini
-  // juga mencegah nilai barcode dipakai sebagai bagian URL yang tidak aman.
+  // EAN/UPC barcode validation: 3 sampai 64 digit angka
   if (!/^\d{3,64}$/.test(barcode)) {
     return NextResponse.json(
       { message: "Barcode harus berisi 3 sampai 64 digit angka" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
   try {
-    const response = await fetch(
-      `${OPEN_FOOD_FACTS_URL}/${encodeURIComponent(barcode)}.json`,
-      {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      },
+    // 1. Cek Redis global cache terlebih dahulu (key: food:barcode:<barcode>)
+    const cachedProduct = await getFoodFromCache(barcode);
+    if (cachedProduct) {
+      // Cache HIT: langsung return data, JANGAN panggil FatSecret / Open Food Facts
+      return NextResponse.json(cachedProduct, {
+        headers: { "X-Cache": "HIT" },
+      });
+    }
+
+    // Cache MISS: 2. Request ke FatSecret sebagai API utama
+    let product: FoodProduct | null = await lookupFatSecret(barcode);
+
+    if (product) {
+      // FatSecret HIT: simpan ke Redis dengan TTL, lalu return
+      await setFoodToCache(barcode, product);
+      return NextResponse.json(product, {
+        headers: {
+          "X-Cache": "MISS",
+          "X-Data-Source": "FatSecret",
+        },
+      });
+    }
+
+    // 3. FatSecret tidak menemukan / gagal: request ke Open Food Facts sebagai fallback
+    product = await lookupOpenFoodFacts(barcode);
+
+    if (product) {
+      // Open Food Facts HIT: normalisasi format, simpan ke Redis dengan TTL, lalu return
+      await setFoodToCache(barcode, product);
+      return NextResponse.json(product, {
+        headers: {
+          "X-Cache": "MISS",
+          "X-Data-Source": "OpenFoodFacts",
+        },
+      });
+    }
+
+    // 4. Kedua API tidak menemukan produk
+    return NextResponse.json(
+      { message: "Produk dengan barcode tersebut tidak ditemukan" },
+      { status: 404 }
     );
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { message: "Layanan pencarian produk sedang tidak tersedia" },
-        { status: 502 },
-      );
-    }
-
-    const result = await response.json();
-    if (result.status !== 1 || !result.product) {
-      return NextResponse.json(
-        { message: "Produk dengan barcode tersebut tidak ditemukan" },
-        { status: 404 },
-      );
-    }
-
-    const product = result.product as Record<string, unknown>;
-    const nutriments = (product.nutriments ?? {}) as Nutriments;
-    const namaMakanan = String(product.product_name ?? "").trim();
-
-    if (!namaMakanan) {
-      return NextResponse.json(
-        { message: "Produk ditemukan, tetapi nama produk tidak tersedia" },
-        { status: 422 },
-      );
-    }
-
-    return NextResponse.json({
-      barcode,
-      nama_makanan: namaMakanan,
-      brand: String(product.brands ?? "").trim() || null,
-      image_url:
-        String(product.image_front_url ?? product.image_url ?? "").trim() ||
-        null,
-      kalori: getNutrient(nutriments, "energy-kcal"),
-      protein: getNutrient(nutriments, "proteins"),
-      lemak: getNutrient(nutriments, "fat"),
-      karbohidrat: getNutrient(nutriments, "carbohydrates"),
-      gula: getNutrient(nutriments, "sugars"),
-    });
   } catch (error) {
-    console.error("SCAN_MAKANAN_LOOKUP_ERROR:", error);
+    console.error("[SCAN_MAKANAN_LOOKUP_ERROR]:", error);
     return NextResponse.json(
       { message: "Gagal menghubungi layanan pencarian produk" },
-      { status: 502 },
+      { status: 502 }
     );
   }
 }
