@@ -15,8 +15,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "images.openfoodfacts.org" },
       { protocol: "https", hostname: "static.openfoodfacts.org" },
-      { protocol: "https", hostname: "**.fatsecret.com" },
-      { protocol: "https", hostname: "m.ftcdn.net" },
     ],
   },
 };
