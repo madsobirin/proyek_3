@@ -8,4 +8,5 @@ export interface FoodProduct {
   lemak: number | null;
   karbohidrat: number | null;
   gula: number | null;
+  source?: string | null;
 }
