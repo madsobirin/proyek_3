@@ -112,12 +112,27 @@ describe("MenuSchema", () => {
     kalori: 450,
     target_status: "Normal" as const,
     waktu_memasak: 30,
+    biaya_per_porsi: 18000,
     gambar: "https://example.com/images/nasi-goreng.jpg",
   };
 
   it("should pass with valid menu data", () => {
     const result = MenuSchema.safeParse(validMenu);
     expect(result.success).toBe(true);
+  });
+
+  it("should fail when per-serving cost is missing or not positive", () => {
+    const missingCost = MenuSchema.safeParse({
+      ...validMenu,
+      biaya_per_porsi: undefined,
+    });
+    const zeroCost = MenuSchema.safeParse({
+      ...validMenu,
+      biaya_per_porsi: 0,
+    });
+
+    expect(missingCost.success).toBe(false);
+    expect(zeroCost.success).toBe(false);
   });
 
   it("should fail when nama_menu is too short (< 3 chars)", () => {

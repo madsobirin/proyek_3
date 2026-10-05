@@ -37,6 +37,11 @@ export const MenuSchema = z.object({
     .int()
     .positive()
     .max(1440, "Waktu memasak maksimal 1440 menit"),
+  biaya_per_porsi: z
+    .number()
+    .int()
+    .positive("Estimasi biaya harus lebih dari 0")
+    .max(100_000_000, "Estimasi biaya maksimal Rp100.000.000"),
   gambar: z
     .string()
     .url("Format gambar harus URL")

@@ -14,6 +14,7 @@ import {
   Heart,
   TrendingUp,
   ChevronRight,
+  Wallet,
 } from "lucide-react";
 
 type TargetStatus = "Kurus" | "Normal" | "Berlebih" | "Obesitas";
@@ -26,6 +27,7 @@ type Menu = {
   kalori: number;
   target_status: TargetStatus;
   waktu_memasak: number;
+  biaya_per_porsi: number | null;
   gambar: string;
   created_at: string;
 };
@@ -314,8 +316,21 @@ export default function MenuDetailPage() {
           <h3 className="text-sm font-black text-text-light mb-4">
             Info Nutrisi
           </h3>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
+              {
+                label: "Biaya per Porsi",
+                value:
+                  menu.biaya_per_porsi === null
+                    ? "Belum diatur"
+                    : new Intl.NumberFormat("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                        maximumFractionDigits: 0,
+                      }).format(menu.biaya_per_porsi),
+                icon: <Wallet size={14} className="text-primary" />,
+                bg: "bg-primary/10 border-primary/20",
+              },
               {
                 label: "Kalori",
                 value: `${menu.kalori} kkal`,

@@ -13,6 +13,7 @@ import {
   Clock,
   FileText,
   Tag,
+  Wallet,
   Check,
   Loader2,
   X,
@@ -47,6 +48,7 @@ type FormData = {
   kalori: string;
   target_status: string;
   waktu_memasak: string;
+  biaya_per_porsi: string;
   gambar: string;
 };
 
@@ -64,6 +66,7 @@ export default function EditMenuPage() {
     kalori: "",
     target_status: "",
     waktu_memasak: "",
+    biaya_per_porsi: "",
     gambar: "",
   });
 
@@ -94,6 +97,7 @@ export default function EditMenuPage() {
           kalori: data.kalori?.toString() ?? "",
           target_status: data.target_status ?? "",
           waktu_memasak: data.waktu_memasak?.toString() ?? "",
+          biaya_per_porsi: data.biaya_per_porsi?.toString() ?? "",
           gambar: data.gambar ?? "",
         });
         if (data.gambar) setImagePreview(data.gambar);
@@ -186,6 +190,9 @@ export default function EditMenuPage() {
           target_status: form.target_status || undefined,
           waktu_memasak: form.waktu_memasak
             ? parseInt(form.waktu_memasak)
+            : undefined,
+          biaya_per_porsi: form.biaya_per_porsi
+            ? parseInt(form.biaya_per_porsi)
             : undefined,
           gambar: form.gambar,
         }),
@@ -369,6 +376,35 @@ export default function EditMenuPage() {
               {errors.nama_menu && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.nama_menu[0]}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                <Wallet className="w-3.5 h-3.5 inline mr-1" />
+                Estimasi Biaya per Porsi (Rp){" "}
+                <span className="text-red-400">*</span>
+              </label>
+              <input
+                name="biaya_per_porsi"
+                type="number"
+                min="1"
+                max="100000000"
+                value={form.biaya_per_porsi}
+                onChange={handleChange}
+                placeholder="15000"
+                className={inputClass("biaya_per_porsi")}
+              />
+              {!form.biaya_per_porsi && (
+                <p className="text-amber-600 text-xs mt-1">
+                  Menu ini belum memiliki estimasi biaya. Isi untuk menyimpan
+                  perubahan.
+                </p>
+              )}
+              {errors.biaya_per_porsi && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.biaya_per_porsi[0]}
                 </p>
               )}
             </div>

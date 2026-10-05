@@ -13,6 +13,7 @@ import {
   Clock,
   FileText,
   Tag,
+  Wallet,
   Check,
   Loader2,
   X,
@@ -47,6 +48,7 @@ type FormData = {
   kalori: string;
   target_status: string;
   waktu_memasak: string;
+  biaya_per_porsi: string;
   gambar: string;
 };
 
@@ -62,6 +64,7 @@ export default function CreateMenuPage() {
     kalori: "",
     target_status: "",
     waktu_memasak: "",
+    biaya_per_porsi: "",
     gambar: "",
   });
 
@@ -159,6 +162,9 @@ export default function CreateMenuPage() {
           target_status: form.target_status || undefined,
           waktu_memasak: form.waktu_memasak
             ? parseInt(form.waktu_memasak)
+            : undefined,
+          biaya_per_porsi: form.biaya_per_porsi
+            ? parseInt(form.biaya_per_porsi)
             : undefined,
           gambar: form.gambar,
         }),
@@ -398,6 +404,29 @@ export default function CreateMenuPage() {
                   </p>
                 )}
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                <Wallet className="w-3.5 h-3.5 inline mr-1" />
+                Estimasi Biaya per Porsi (Rp){" "}
+                <span className="text-red-400">*</span>
+              </label>
+              <input
+                name="biaya_per_porsi"
+                type="number"
+                min="1"
+                max="100000000"
+                value={form.biaya_per_porsi}
+                onChange={handleChange}
+                placeholder="15000"
+                className={inputClass("biaya_per_porsi")}
+              />
+              {errors.biaya_per_porsi && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.biaya_per_porsi[0]}
+                </p>
+              )}
             </div>
 
             {/* Target Status */}
