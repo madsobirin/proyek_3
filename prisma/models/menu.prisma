@@ -13,6 +13,7 @@ model Menu {
   kalori        Int
   target_status TargetStatus
   waktu_memasak Int
+  biaya_per_porsi Int?
   dibaca        Int? @default(0)
   gambar        String
 

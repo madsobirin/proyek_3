@@ -12,6 +12,7 @@ import {
   Shield,
   X,
   Filter,
+  Wallet,
 } from "lucide-react";
 
 type TargetStatus = "Kurus" | "Normal" | "Berlebih" | "Obesitas";
@@ -24,6 +25,7 @@ type Menu = {
   kalori: number;
   target_status: TargetStatus;
   waktu_memasak: number;
+  biaya_per_porsi: number | null;
   dibaca: number | null;
   gambar: string;
   created_at: string;
@@ -61,6 +63,11 @@ const STATUS_CONFIG: Record<
 
 const ALL_STATUS: TargetStatus[] = ["Kurus", "Normal", "Berlebih", "Obesitas"];
 const ITEMS_PER_PAGE = 9;
+const currencyFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
 
 export default function MenuSehatPage() {
   const [menus, setMenus] = useState<Menu[]>([]);
@@ -69,9 +76,20 @@ export default function MenuSehatPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeStatus, setActiveStatus] = useState<TargetStatus | "">("");
+  const [budgetLimit, setBudgetLimit] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilter, setShowFilter] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  const changeActiveStatus = (status: TargetStatus | "") => {
+    setActiveStatus(status);
+    setCurrentPage(1);
+  };
+
+  const changeBudgetLimit = (value: string) => {
+    setBudgetLimit(value);
+    setCurrentPage(1);
+  };
 
   // Debounce search
   useEffect(() => {
@@ -81,10 +99,6 @@ export default function MenuSehatPage() {
     }, 400);
     return () => clearTimeout(t);
   }, [search]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeStatus]);
 
   // Tutup filter dropdown klik luar
   useEffect(() => {
@@ -134,7 +148,14 @@ export default function MenuSehatPage() {
       m.nama_menu.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
       m.deskripsi.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchStatus = activeStatus === "" || m.target_status === activeStatus;
-    return matchSearch && matchStatus;
+    const maxBudget = budgetLimit === "" ? null : Number(budgetLimit);
+    const matchBudget =
+      maxBudget === null ||
+      (Number.isFinite(maxBudget) &&
+        maxBudget > 0 &&
+        m.biaya_per_porsi !== null &&
+        m.biaya_per_porsi <= maxBudget);
+    return matchSearch && matchStatus && matchBudget;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
@@ -175,7 +196,7 @@ export default function MenuSehatPage() {
           </p>
 
           {/* Search + Filter */}
-          <div className="flex items-center gap-3 max-w-xl mx-auto mb-30">
+          <div className="flex flex-col sm:flex-row items-center gap-3 max-w-3xl mx-auto mb-30">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
@@ -194,6 +215,20 @@ export default function MenuSehatPage() {
               )}
             </div>
 
+            <div className="relative w-full sm:w-52 shrink-0">
+              <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <input
+                type="number"
+                min="1"
+                step="1000"
+                value={budgetLimit}
+                onChange={(e) => changeBudgetLimit(e.target.value)}
+                placeholder="Budget maks. (Rp/porsi)"
+                aria-label="Batas budget per porsi dalam rupiah"
+                className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-card-dark border border-card-border text-text-light placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-all text-sm"
+              />
+            </div>
+
             {/* Filter dropdown */}
             <div className="relative" ref={filterRef}>
               <button
@@ -210,7 +245,7 @@ export default function MenuSehatPage() {
                   <span
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActiveStatus("");
+                      changeActiveStatus("");
                     }}
                     className="hover:opacity-70"
                   >
@@ -223,7 +258,7 @@ export default function MenuSehatPage() {
                 <div className="absolute right-0 top-full mt-2 w-44 bg-card-dark border border-card-border rounded-2xl shadow-2xl z-30 overflow-hidden">
                   <button
                     onClick={() => {
-                      setActiveStatus("");
+                      changeActiveStatus("");
                       setShowFilter(false);
                     }}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${activeStatus === "" ? "text-primary font-bold" : "text-text-muted hover:text-text-light hover:bg-background-base/50"}`}
@@ -234,7 +269,7 @@ export default function MenuSehatPage() {
                     <button
                       key={s}
                       onClick={() => {
-                        setActiveStatus(s);
+                        changeActiveStatus(s);
                         setShowFilter(false);
                       }}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${activeStatus === s ? "text-primary font-bold" : "text-text-muted hover:text-text-light hover:bg-background-base/50"}`}
@@ -278,6 +313,7 @@ export default function MenuSehatPage() {
             {featured &&
               !debouncedSearch &&
               !activeStatus &&
+              !budgetLimit &&
               currentPage === 1 && (
                 <Link href={`/menu/${featured.slug}`}>
                   <div className="group relative bg-card-dark border border-card-border rounded-3xl overflow-hidden mb-12 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,255,127,0.06)]">
@@ -302,6 +338,14 @@ export default function MenuSehatPage() {
                             <Clock size={13} className="text-primary" />
                             {featured.waktu_memasak} mnt
                           </span>
+                          {featured.biaya_per_porsi !== null && (
+                            <span className="flex items-center gap-1.5 bg-background-base border border-card-border px-3 py-1.5 rounded-xl text-xs font-bold text-text-light">
+                              <Wallet size={13} className="text-primary" />
+                              {currencyFormatter.format(
+                                featured.biaya_per_porsi,
+                              )}
+                            </span>
+                          )}
                         </div>
                         <div className="w-fit">
                           <span className="inline-flex items-center gap-2 bg-primary text-background-dark px-6 py-3 rounded-2xl text-sm font-black hover:bg-primary-hover transition-all shadow-[0_0_20px_rgba(0,255,127,0.3)] group-hover:shadow-[0_0_30px_rgba(0,255,127,0.5)]">
@@ -351,7 +395,7 @@ export default function MenuSehatPage() {
             {/* ── Status Filter Pills ── */}
             <div className="flex items-center gap-2 flex-wrap mb-8">
               <button
-                onClick={() => setActiveStatus("")}
+                onClick={() => changeActiveStatus("")}
                 className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
                   activeStatus === ""
                     ? "bg-primary text-background-dark border-primary"
@@ -363,7 +407,7 @@ export default function MenuSehatPage() {
               {ALL_STATUS.map((s) => (
                 <button
                   key={s}
-                  onClick={() => setActiveStatus(s)}
+                  onClick={() => changeActiveStatus(s)}
                   className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
                     activeStatus === s
                       ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} ${STATUS_CONFIG[s].border}`
@@ -382,7 +426,8 @@ export default function MenuSehatPage() {
                 <button
                   onClick={() => {
                     setSearch("");
-                    setActiveStatus("");
+                    changeActiveStatus("");
+                    changeBudgetLimit("");
                   }}
                   className="mt-3 text-primary text-sm font-semibold hover:underline"
                 >
@@ -447,6 +492,17 @@ export default function MenuSehatPage() {
                               <Clock size={12} className="text-primary/70" />
                               {item.waktu_memasak}m
                             </span>
+                            {item.biaya_per_porsi !== null && (
+                              <span className="flex items-center gap-1 text-xs text-text-muted">
+                                <Wallet
+                                  size={12}
+                                  className="text-primary/70"
+                                />
+                                {currencyFormatter.format(
+                                  item.biaya_per_porsi,
+                                )}
+                              </span>
+                            )}
                           </div>
                           <ChevronRight
                             size={16}
