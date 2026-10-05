@@ -3,6 +3,7 @@
 import React from "react";
 import {
   Home,
+  ScanBarcode,
   Utensils,
   NotebookText,
   MapPin,
@@ -25,6 +26,12 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
   { name: "Dashboard", label: "Beranda", icon: Home, href: "/admin/dashboard" },
+  {
+    name: "Master Makanan",
+    label: "Master Scan Makanan",
+    icon: ScanBarcode,
+    href: "/admin/master-makanan",
+  },
   {
     name: "Menu Sehat",
     label: "Menu Sehat",

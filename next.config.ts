@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "static.openfoodfacts.org" },
     ],
   },
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion"],
+  },
 };
 
 export default nextConfig;
