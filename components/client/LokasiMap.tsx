@@ -90,9 +90,10 @@ export default function LokasiMap({
 
   // Init map once
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    const container = containerRef.current;
+    if (!container || mapRef.current) return;
 
-    const map = L.map(containerRef.current, {
+    const map = L.map(container, {
       center: userPosition || [-6.7, 108.55],
       zoom: 14,
       zoomControl: false,
@@ -115,9 +116,18 @@ export default function LokasiMap({
     setMapReady(true);
 
     return () => {
-      map.remove();
+      try {
+        map.stop();
+        map.remove();
+      } catch {
+        // Abaikan jika map sudah terlepas
+      }
       mapRef.current = null;
       setMapReady(false);
+      if (container) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (container as any)._leaflet_id = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -198,9 +208,22 @@ export default function LokasiMap({
 
     // Find and open the popup for the selected marker
     const idx = locations.findIndex((l) => l.id === selectedLocation.id);
+    let popupTimer: ReturnType<typeof setTimeout> | undefined;
     if (idx !== -1 && markersRef.current[idx]) {
-      setTimeout(() => markersRef.current[idx]?.openPopup(), 900);
+      popupTimer = setTimeout(() => {
+        if (mapRef.current && markersRef.current[idx]) {
+          try {
+            markersRef.current[idx]?.openPopup();
+          } catch {
+            // Abaikan jika marker/peta sudah terlepas
+          }
+        }
+      }, 900);
     }
+
+    return () => {
+      if (popupTimer) clearTimeout(popupTimer);
+    };
   }, [selectedLocation, mapReady, locations]);
 
   return (

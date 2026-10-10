@@ -88,44 +88,44 @@
 
 /* ===== DARK MODE (HEALTH & WELLNESS) ===== */
 .dark {
-  /* Slate-Obsidian base with very subtle calming pine-mineral undertone */
-  --background: #090d0b;
-  --foreground: #f1f5f9;
-  --card: #101613;
-  --card-foreground: #f1f5f9;
+  /* Soothing botanical dark green - elevated, fresh & pleasant without being pitch black */
+  --background: #0b1a14;
+  --foreground: #f2f9f5;
+  --card: #11261d;
+  --card-foreground: #f2f9f5;
 
   /* Primary */
   --primary: #10b981;
   --primary-foreground: #042014;
 
   /* Secondary */
-  --secondary: #141f19;
+  --secondary: #163327;
   --secondary-foreground: #a7f3d0;
 
   /* Muted */
-  --muted: #151e19;
-  --muted-foreground: #84968c;
+  --muted: #142d22;
+  --muted-foreground: #8fa89b;
 
   /* Accent */
-  --accent: #17261f;
+  --accent: #1b3d2f;
   --accent-foreground: #6ee7b7;
 
   /* Destructive */
   --destructive: oklch(0.704 0.191 22.216);
 
   /* Borders & inputs */
-  --border: #1a2720;
-  --border-2: #23372c;
-  --input: #1a2720;
+  --border: #1c3e30;
+  --border-2: #244f3e;
+  --input: #1c3e30;
   --ring: #10b981;
 
   /* Custom FitLife tokens – dark */
-  --color-background-base: #090d0b;
-  --color-background-dark: #060907;
-  --color-card-dark: #101613;
-  --color-card-border: #1a2720;
-  --color-text-light: #f1f5f9;
-  --color-text-muted: #84968c;
+  --color-background-base: #0b1a14;
+  --color-background-dark: #071610;
+  --color-card-dark: #11261d;
+  --color-card-border: #1c3e30;
+  --color-text-light: #f2f9f5;
+  --color-text-muted: #8fa89b;
 }
 
 @layer base {

@@ -1,12 +1,14 @@
 # FitLife — Product Requirements Document (PRD)
 
-> **Source of truth**: Current codebase at commit `29068e5` on branch `update-gitig`.
-> **Generated**: 2026-10-04
-> **Project name**: `project-fitlife` v0.1.0
+> **Document Status**: Complete & Aligned with Source Code  
+> **Source of Truth**: Current Codebase (`bffabca` on branch `calc-bmi`)  
+> **Last Updated**: 2026-10-10  
+> **Project Name**: `project-fitlife` (v0.1.0)  
+> **Framework & Runtime**: Next.js 16.1.6 (App Router), React 19.2.3, TypeScript 5.x, PostgreSQL, Prisma 7.4.2, Tailwind CSS v4, Redis (ioredis)
 
 ---
 
-## Table of Contents
+## Daftar Isi (Table of Contents)
 
 1. [Product Overview](#1-product-overview)
 2. [Product Goals](#2-product-goals)
@@ -27,376 +29,387 @@
 17. [Platform / Environment Requirements](#17-platform--environment-requirements)
 18. [Current Limitations or Known Issues](#18-current-limitations-or-known-issues)
 19. [Important Technical Constraints](#19-important-technical-constraints)
-20. [Feature-to-Page/Component Mapping](#20-feature-to-pagecomponent-mapping)
+20. [Feature-to-Page / Component Mapping](#20-feature-to-page--component-mapping)
 21. [Acceptance Criteria for Existing Major Features](#21-acceptance-criteria-for-existing-major-features)
 
 ---
 
 ## 1. Product Overview
 
-**FitLife** (branded as *Fitlife.id*) is a health and fitness web platform built with Next.js (App Router). It helps users assess their body health through BMI/BMR/TDEE calculations, discover healthy meal recipes matched to their nutritional needs, read health articles, find nearby sports facilities on an interactive map, scan packaged food barcodes for nutrition data, and chat with an AI health assistant (FitBot).
+**FitLife** (dikenal di antarmuka sebagai *FitLife.id*) adalah platform digital kesehatan, nutrisi, dan kebugaran komprehensif berbasis web (Next.js App Router). Aplikasi dirancang untuk membantu masyarakat memantau status kesehatan fisik secara mandiri melalui perhitungan presisi BMI, BMR (Mifflin-St Jeor), dan estimasi kebutuhan energi harian (TDEE), menemukan rekomendasi resep makanan sehat yang disesuaikan dengan kondisi tubuh, mengeksplorasi fasilitas olahraga terdekat pada peta interaktif, memindai barcode produk makanan kemasan untuk memeriksa nutrisi dan alergen, serta berkonsultasi dengan asisten kesehatan berbasis kecerdasan buatan (**FitBot**).
 
-The platform serves two distinct user segments through route groups:
-- **Client-facing pages** (`/(client)`) — public and authenticated users browse content and use health tools.
-- **Admin dashboard** (`/(admin)`) — administrators manage all content (menus, articles, locations, users).
+Platform ini mengintegrasikan tiga ranah utama:
+- **Client Web Portal** (`/(client)`): Pengalaman publik dan anggota terdaftar untuk menghitung parameter kesehatan, menelusuri menu, membaca artikel edukatif, mengecek peta fasilitas olahraga, riwayat scan makanan, dan asisten FitBot.
+- **Admin Management Dashboard** (`/(admin)`): Panel pengelola terpusat untuk memantau metrik pengguna, memvalidasi dan memoderasi master produk barcode makanan (*Master Scan Makanan*), mengelola konten resep menu, artikel edukasi, peta fasilitas olahraga, dan manajemen akun pengguna.
+- **RESTful API & Integration Layer** (`/api/*`): Layanan backend yang melayani aplikasi web client dan klien aplikasi mobile pendamping (Flutter) dengan dukungan otentikasi ganda (Cookie HTTP-only & Bearer Token), Redis 3-Tier Caching, integrasi Cloudinary, dan Open Food Facts API.
 
-A companion **mobile app** (Flutter) integrates via the same REST API for barcode scanning and authentication.
+### Ringkasan Tech Stack
 
-### Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16.1.6 (App Router), React 19.2.3, TypeScript 5 |
-| Styling | Tailwind CSS v4, Framer Motion, GSAP |
-| Database | PostgreSQL via `pg` + `@prisma/adapter-pg` |
-| ORM | Prisma 7.4.2 |
-| Auth | JWT (HS256 via `jose`), bcryptjs, Google OAuth |
-| Validation | Zod 4.3.6 |
-| Media Storage | Cloudinary |
-| Maps | Leaflet + react-leaflet |
-| Rich Text | Tiptap (starter-kit, image, link, color, code-block) |
-| AI Chat | Groq Cloud API (model `qwen/qwen3.8-27b`) |
-| Barcode Data | Open Food Facts API |
-| Testing | Vitest 4.1.7 |
+| Lapisan (Layer) | Teknologi & Pustaka | Keterangan / Status |
+|---|---|---|
+| **Core Framework** | Next.js 16.1.6 (App Router, Turbopack) | *Confirmed from code* |
+| **Runtime & UI** | React 19.2.3, TypeScript 5.x | *Confirmed from code* |
+| **Styling & Theme** | Tailwind CSS v4, `tw-animate-css`, `next-themes` (Obsidian Slate + Vital Emerald) | *Confirmed from code* |
+| **Database & ORM** | PostgreSQL (Neon DB), Prisma 7.4.2 via `@prisma/adapter-pg` | *Confirmed from code* |
+| **Caching Layer** | Redis 6.x via `ioredis` (3-tier lookup + aggregated stats cache) | *Confirmed from code* |
+| **Otentikasi** | JWT (HS256 via `jose`), `bcryptjs` (salt 12), Google OAuth (`@react-oauth/google`) | *Confirmed from code* |
+| **Validasi Skema** | Zod 4.3.6 | *Confirmed from code* |
+| **Media Storage** | Cloudinary v2 SDK (`res.cloudinary.com`) | *Confirmed from code* |
+| **Pemetaan (Maps)** | Leaflet 1.9.4, `react-leaflet` 5.0.0, Nominatim OpenStreetMap | *Confirmed from code* |
+| **Rich Text Editor** | Tiptap 3.22 (Starter Kit, Image, Link, Color, CodeBlock) | *Confirmed from code* |
+| **AI Conversational** | Groq Cloud API (`qwen/qwen3.8-27b`) dengan Zero-Token shortcut & guardrails | *Confirmed from code* |
+| **Nutrisi Barcode** | Open Food Facts REST API v0 | *Confirmed from code* |
+| **Testing Engine** | Vitest 4.1.7 (74 unit & integration tests) | *Confirmed from code* |
 
 ---
 
 ## 2. Product Goals
 
-> **Status**: *Inferred from codebase features and UI copy.*
+> **Status Identifikasi**: *Confirmed dari implementasi fitur, copy antarmuka, dan dokumentasi arsitektur.*
 
-1. **Empower personal health awareness** — provide accessible BMI, BMR, and TDEE calculations with actionable nutritional recommendations.
-2. **Guide healthy eating** — curate recipes categorized by BMI target status (Kurus, Normal, Berlebih, Obesitas) with calorie and macronutrient information.
-3. **Encourage physical activity** — map sports facilities near the user, filtered by exercise types appropriate to their BMI category.
-4. **Educate users** — publish health and fitness articles with rich content.
-5. **Track nutrition intake** — enable barcode scanning of packaged foods to review nutritional values (via mobile companion app).
-6. **Provide AI health guidance** — offer a conversational AI assistant (FitBot) for health, fitness, and nutrition questions.
+1. **Edukasi & Pemantauan Kesehatan Mandiri**: Menyediakan alat kalkulator kesehatan berbasis ilmiah (BMI, BMR Mifflin-St Jeor, TDEE, rentang berat ideal, dan distribusi makronutrien) dengan visualisasi intuitif WHO 4-Zone Gauge Meter tanpa hambatan pendaftaran (mendukung kalkulasi instan di sisi klien).
+2. **Personalisasi Pola Makan Sehat**: Menghubungkan hasil kalkulasi kesehatan pengguna secara otomatis dengan resep makanan bergizi yang relevan sesuai target status gizi (*Kurus*, *Normal*, *Berlebih*, *Obesitas*).
+3. **Pendorong Aktivitas Fisik Lokal**: Membantu pengguna menemukan fasilitas olahraga terdekat (Gym, Lapangan Olahraga, Area Low-Impact) menggunakan geolokasi peramban dan penentuan jarak Haversine.
+4. **Transparansi Nutrisi Produk Kemasan**: Menghadirkan basis data makanan terverifikasi melalui pemindaian barcode dengan arsitektur 3-tier pencarian berkecepatan tinggi serta kurasi berbasis komunitas dan admin.
+5. **Dukungan Asisten Kesehatan AI yang Aman & Efisien**: Memberikan panduan kebugaran dan jawaban cepat melalui FitBot dengan memprioritaskan privasi data, injeksi konteks riwayat fisik pengguna, dan efisiensi token melalui respon shortcut lokal.
+6. **Platform Manajemen Terpadu**: Memberdayakan administrator untuk mengontrol kualitas data, meninjau kontribusi makanan pengguna, mempublikasikan artikel edukatif, dan memoderasi fasilitas kebugaran.
 
 ---
 
 ## 3. Existing Features
 
-| # | Feature | Status |
-|---|---|---|
-| 1 | BMI / BMR / TDEE Health Calculator | ✅ Confirmed |
-| 2 | Macronutrient Recommendation Engine | ✅ Confirmed |
-| 3 | Healthy Recipe Directory (Menu Makanan Sehat) | ✅ Confirmed |
-| 4 | Health Article CMS | ✅ Confirmed |
-| 5 | Sports Facility Locator (Leaflet Map) | ✅ Confirmed |
-| 6 | Packaged Food Barcode Scanner (via Open Food Facts) | ✅ Confirmed |
-| 7 | AI Health Chatbot (FitBot via Groq) | ✅ Confirmed |
-| 8 | Email/Password Authentication | ✅ Confirmed |
-| 9 | Google OAuth (Web + Mobile) | ✅ Confirmed |
-| 10 | User Profile Management | ✅ Confirmed |
-| 11 | Avatar Upload (Cloudinary) | ✅ Confirmed |
-| 12 | Admin Dashboard with Analytics | ✅ Confirmed |
-| 13 | Admin Menu CRUD | ✅ Confirmed |
-| 14 | Admin Article CRUD with Rich Text Editor | ✅ Confirmed |
-| 15 | Admin Location CRUD with Map Picker | ✅ Confirmed |
-| 16 | Admin User Management (activate/suspend/delete) | ✅ Confirmed |
-| 17 | BMI History Tracking & Chart | ✅ Confirmed |
-| 18 | Dark/Light Theme Toggle | ✅ Confirmed |
-| 19 | PDF Export of Health Results | ✅ Inferred (jspdf + html2canvas in deps) |
-| 20 | Mobile App Integration (Flutter) | ✅ Inferred (dual auth token paths, scan-makanan mobile flow) |
+Tabel berikut merangkum seluruh fitur aplikasi dengan penandaan status kepastian:
+- **[Confirmed from code]**: Terverifikasi langsung dari kode sumber, rute API, dan skema database.
+- **[Inferred]**: Disimpulkan dari dependensi paket, parameter konfigurasi, atau alur UI pendukung.
+- **[Unknown / Needs Clarification]**: Belum terdapat implementasi aktif atau memerlukan konfirmasi pengguna/infrastruktur.
+
+| # | Fitur | Status Kepastian | Rincian Modul |
+|---|---|---|---|
+| 1 | **Kalkulator BMI, BMR, & TDEE Terpadu** | [Confirmed from code] | `lib/kesehatan.ts`, `/kalkulator`, gauge WHO 4-zone |
+| 2 | **Rekomendasi Makronutrien Otomatis** | [Confirmed from code] | Distribusi protein, lemak, karbohidrat presisi IEEE-754 |
+| 3 | **Penyimpanan Riwayat Kalkulasi Kesehatan** | [Confirmed from code] | Model `Perhitungan`, endpoint `/api/perhitungan` |
+| 4 | **Grafik Riwayat BMI Interaktif** | [Confirmed from code] | Komponen `BMIRiwayatChart` pada `/kalkulator` |
+| 5 | **Katalog Menu Makanan Sehat** | [Confirmed from code] | `/menu`, `/menu/[slug]`, filter `TargetStatus`, counter baca |
+| 6 | **CMS Artikel Kesehatan Edukatif** | [Confirmed from code] | `/artikel`, `/artikel/[slug]`, filter kategori, featured highlight |
+| 7 | **Peta Fasilitas Olahraga & Geolokasi** | [Confirmed from code] | `/lokasi`, Leaflet Map, Haversine formula, rute Google Maps |
+| 8 | **3-Tier Food Barcode Lookup** | [Confirmed from code] | `/api/scan-makanan/lookup`, Tier 1 Redis, Tier 2 DB, Tier 3 OFF |
+| 9 | **Riwayat & Kontribusi Scan Makanan** | [Confirmed from code] | `/scan-makanan`, `/api/scan-makanan/save`, upload Cloudinary |
+| 10 | **Admin Master Scan Makanan Catalog** | [Confirmed from code] | `/admin/master-makanan`, verifikasi cepat, editing gizi, sinkronisasi Redis |
+| 11 | **Admin Content CRUD (Menu, Artikel, Lokasi)** | [Confirmed from code] | `/admin/menu/*`, `/admin/artikel/*`, `/admin/lokasi/*` |
+| 12 | **Admin User Management** | [Confirmed from code] | `/admin/pengguna`, `/api/accounts/*`, aktivasi & delete cascade |
+| 13 | **Admin Analytics Dashboard** | [Confirmed from code] | `/admin/dashboard`, metrik pengguna, menu terpopuler, counter animasi |
+| 14 | **FitBot AI Conversational Assistant** | [Confirmed from code] | `/api/chat`, Groq `qwen/qwen3.8-27b`, zero-token shortcuts, retry 429/503 |
+| 15 | **Dual-Method Authentication (Email & Google)** | [Confirmed from code] | `/login`, `/register`, `/api/auth/*`, `@react-oauth/google` |
+| 16 | **Dual-Channel Session Handling (Cookie & Bearer)** | [Confirmed from code] | `lib/auth.ts`, cookie HTTP-only (web) + Bearer header (mobile) |
+| 17 | **Manajemen Profil Pengguna** | [Confirmed from code] | `/profile`, update fisik TB/BB, foto Cloudinary, ganti password |
+| 18 | **Sistem Tema Dark & Light Mode (Health Theme)** | [Confirmed from code] | `app/globals.css`, Botanical Forest Dark `#0b1a14`, Leaf Emerald `#10b981` |
+| 19 | **Database Seeding & Test Data Factories** | [Confirmed from code] | `prisma/seed.ts`, `prisma/factories/*` (menu, artikel, lokasi) |
+| 20 | **Suite Pengujian Unit & Integrasi (74 Tests)** | [Confirmed from code] | Vitest 4.1.7 di direktori `__tests__` |
+| 21 | **Ekspor Hasil Kesehatan ke Dokumen PDF** | [Inferred] | Dependensi `jspdf`, `jspdf-autotable`, `html2canvas` terpasang di `package.json` |
+| 22 | **Integrasi Klien Aplikasi Mobile (Flutter)** | [Inferred] | Dukungan Bearer token di `lib/auth.ts`, variabel `NEXT_PUBLIC_FITLIFE_MOBILE_APP_URL` |
+| 23 | **Rate Limiting Global pada API** | [Unknown / Needs Clarification] | Belum terdapat middleware rate limit terpusat (hanya retry backoff di Groq) |
+| 24 | **Verifikasi Email & Reset Password via Email** | [Unknown / Needs Clarification] | Akun langsung aktif tanpa verifikasi email; belum ada flow lupa password |
 
 ---
 
 ## 4. Target Users
 
-> **Status**: *Inferred from UI copy, feature design, and Indonesian-language content.*
+> **Status Identifikasi**: *Inferred dari bahasa antarmuka (Bahasa Indonesia), alur kerja, dan perizinan sistem.*
 
-| Segment | Description |
-|---|---|
-| **Health-conscious individuals** | Users wanting to track BMI, calculate daily caloric needs, and receive personalized meal recommendations. |
-| **Fitness beginners** | Users seeking nearby sports facilities appropriate for their fitness level. |
-| **General public** | Readers of health/fitness articles and scanners of packaged food nutrition. |
-| **Content administrators** | Admins who manage recipes, articles, sports locations, and user accounts. |
-
-**Locale**: Indonesian (Bahasa Indonesia) — all UI labels, validation messages, and content are in Indonesian.
+| Segmen Pengguna | Profil & Kebutuhan | Peran & Akses Sistem |
+|---|---|---|
+| **Masyarakat Umum / Pengunjung Publik** | Individu yang ingin memeriksa status berat badan secara cepat, mencari inspirasi resep bergizi, dan membaca tips gaya hidup sehat tanpa wajib mendaftar. | Akses publik (`guest`): Menghitung BMI instan (tanpa penyimpanan), membaca menu, artikel, dan peta lokasi. |
+| **Anggota Komunitas Terdaftar** | Individu yang aktif menjaga kebugaran, ingin mencatat riwayat perkembangan berat badan dari waktu ke waktu, menyimpan produk makanan hasil scan, dan berkonsultasi dengan FitBot. | Akses terautentikasi (`role: "user"`): CRUD riwayat kalkulasi, simpan scan barcode, kontribusi data produk makanan, konsultasi FitBot, update profil fisik. |
+| **Administrator Platform** | Tim pengelola operasional yang bertugas memvalidasi katalog produk barcode, mempublikasikan artikel edukasi, mengelola resep makanan sehat, dan mengawasi akun pengguna. | Akses manajerial (`role: "admin"`): Dashboard analitik, CRUD master scan makanan, CRUD artikel (Tiptap), CRUD menu, CRUD lokasi (Map Picker), moderasi akun. |
 
 ---
 
 ## 5. Main User Flows
 
-### Flow 1: Health Assessment (BMI Calculator)
+### Flow 1: Perhitungan Kesehatan & Rekomendasi Terpadu (`/kalkulator`)
 
 ```mermaid
-flowchart LR
-    A["Visit /kalkulator"] --> B["Enter: gender, height, weight, age, activity"]
-    B --> C["Client-side instant preview via kesehatan.ts"]
-    C --> D{"Logged in?"}
-    D -- Yes --> E["POST /api/perhitungan — saves to DB"]
-    D -- No --> F["Results shown, not persisted"]
-    E --> G["View recommended menus & sports venues"]
-    F --> G
-    G --> H["Browse BMI history chart"]
+flowchart TD
+    A["Buka Halaman /kalkulator"] --> B["Masukkan Gender, TB, BB, Usia, Tingkat Aktivitas"]
+    B --> C["Kalkulasi Instan di Browser (lib/kesehatan.ts)"]
+    C --> D["Tampilkan Gauge WHO 4-Zone, BMR, TDEE, Makronutrien"]
+    D --> E{"Status Sesi Pengguna?"}
+    E -- Login --> F["Kirim POST /api/perhitungan"]
+    F --> G["Data Tersimpan di DB & Update Profil TB/BB"]
+    G --> H["Tampilkan Grafik Riwayat BMI & Tab Makanan Rekomendasi"]
+    E -- Belum Login --> I["Tampilkan Hasil Preview Saja + CTA Login"]
+    H --> J["Muat Peta Fasilitas Olahraga Relevan Berdasarkan Status BMI"]
+    I --> J
 ```
 
-### Flow 2: Browse Healthy Recipes
+### Flow 2: 3-Tier Barcode Scan Makanan & Pencarian Nutrisi
 
 ```mermaid
-flowchart LR
-    A["Visit /menu"] --> B["Search or filter by target status"]
-    B --> C["View recipe cards with pagination"]
-    C --> D["Click recipe → /menu/slug"]
-    D --> E["View nutrition info, instructions, related recipes"]
+flowchart TD
+    A["Pengguna Input Barcode / Scan Produk"] --> B["Kirim POST /api/scan-makanan/lookup"]
+    B --> C{"Cek Tier 1: Redis Global Cache?"}
+    C -- Cache HIT --> D["Kembalikan Data Produk (Header: X-Cache: HIT)"]
+    C -- Cache MISS --> E{"Cek Tier 2: Database Master Komunitas (master_makanan)?"}
+    E -- Ditemukan di DB --> F["Simpan ke Redis Cache (TTL 7 Hari)"]
+    F --> G["Increment counter scan_count di DB"]
+    G --> D
+    E -- Tidak Ditemukan --> H{"Cek Tier 3: Open Food Facts API Eksternal?"}
+    H -- Ditemukan --> I["Normalisasi Data Gizi per 100g"]
+    I --> J["Upsert ke Tabel master_makanan & Simpan ke Redis Cache"]
+    J --> D
+    H -- Tidak Ditemukan --> K["Kembalikan Status 404 (Produk Tidak Terdaftar)"]
+    D --> L{"Pengguna Terautentikasi?"}
+    L -- Ya --> M["Opsi Simpan ke Riwayat Pribadi: POST /api/scan-makanan/save"]
+    L -- Tidak --> N["Tampilkan Hasil Nutrisi di Layar Saja"]
 ```
 
-### Flow 3: Authentication
+### Flow 3: Kurasi & Verifikasi Master Makanan oleh Admin
 
 ```mermaid
-flowchart LR
-    A["Visit /login or /register"] --> B{"Method?"}
-    B -- Email/Password --> C["POST /api/auth/register or login"]
-    B -- Google OAuth --> D["POST /api/auth/google"]
-    C --> E["JWT token set in HTTP-only cookie, 7-day expiry"]
-    D --> E
-    E --> F["Redirect to /"]
+flowchart TD
+    A["Admin Buka /admin/master-makanan"] --> B["Ambil Data GET /api/admin/master-makanan (Filter/Search/Sort)"]
+    B --> C["Tampilkan Metrik Statistik (Total, Verified, Community, Scans)"]
+    C --> D{"Pilihan Tindakan Admin"}
+    D -- Verifikasi Cepat --> E["Klik Tombol Verifikasi Cepat (Status 'verified')"]
+    D -- Edit Informasi Gizi --> F["Buka Modal Edit (Perbarui Nilai Kalori/P/L/K/Gula)"]
+    D -- Tambah Produk Manual --> G["Buka Modal Tambah Produk (Upload Foto ke Cloudinary)"]
+    D -- Hapus Produk --> H["Konfirmasi Hapus Produk dari Katalog"]
+    E --> I["PUT /api/admin/master-makanan/:id + Update DB"]
+    F --> I
+    G --> J["POST /api/admin/master-makanan + Simpan ke DB"]
+    H --> K["DELETE /api/admin/master-makanan/:id + Hapus dari DB"]
+    I --> L["Perbarui Cache Redis Terkait (food:barcode:X) & Invalidate Statistik"]
+    J --> L
+    K --> M["Hapus Kunci Cache Redis (food:barcode:X) & Invalidate Statistik"]
 ```
 
-### Flow 4: Admin Content Management
+### Flow 4: Konsultasi FitBot AI dengan Zero-Token Shortcut
 
 ```mermaid
-flowchart LR
-    A["Admin logs in"] --> B["Dashboard /admin/dashboard"]
-    B --> C["View stats: users, menus, articles"]
-    C --> D["Manage content"]
-    D --> E["CRUD menus, articles, locations, users"]
-```
-
-### Flow 5: Food Barcode Scanning
-
-```mermaid
-flowchart LR
-    A["Mobile app scans barcode"] --> B["POST /api/scan-makanan/lookup"]
-    B --> C["Query Open Food Facts API"]
-    C --> D["Display nutrition: calories, protein, fat, carbs, sugar"]
-    D --> E["POST /api/scan-makanan/save — persist to history"]
-    E --> F["View history on web at /scan-makanan"]
-```
-
-### Flow 6: AI Chatbot (FitBot)
-
-```mermaid
-flowchart LR
-    A["Click floating chat button"] --> B["Enter health question"]
-    B --> C{"Shortcut match?"}
-    C -- Yes --> D["Direct DB/calculation response, zero LLM tokens"]
-    C -- No --> E["Groq API call with user context injection"]
-    D --> F["Display answer"]
-    E --> F
+flowchart TD
+    A["Pengguna Klik Floating Chat Button"] --> B{"Pemeriksaan Login?"}
+    B -- Belum Login --> C["Tampilkan Pesan Peringatan Wajib Login"]
+    B -- Terautentikasi --> D["Pengguna Mengirim Pertanyaan"]
+    D --> E{"Pencocokan Pesan Shortcut Lokal?"}
+    E -- 'cek tinggi & berat badan' --> F["Ambil TB & BB dari Akun DB Langsung (0 Token LLM)"]
+    E -- 'status bmi terakhir' --> G["Ambil Hasil Kalkulasi Terakhir DB (0 Token LLM)"]
+    E -- 'hitung kalori harian' --> H["Hitung Rumus Mifflin-St Jeor DB (0 Token LLM)"]
+    E -- Pertanyaan Bebas --> I["Ambil Profil Fisik + Riwayat Chat (Sliding Window 4 Pesan)"]
+    I --> J["Kirim ke Groq Cloud API (qwen/qwen3.8-27b, max 350 token)"]
+    J --> K{"Status Respons HTTP?"}
+    K -- 200 OK --> L["Tampilkan Respons Asisten di Chat Window"]
+    K -- 429 / 503 --> M["Jalankan Exponential Backoff Retry (Maksimal 3 Kali: 2s, 4s, 8s)"]
+    M --> L
+    F --> L
+    G --> L
+    H --> L
 ```
 
 ---
 
 ## 6. Page / Route Inventory
 
-### Client Pages (`/(client)`)
+### 6.1. Client-Facing Routes (`app/(client)`)
 
-| Route | Component | Description |
-|---|---|---|
-| `/` | `Home` | Landing page with hero, feature cards, recent content |
-| `/kalkulator` | `KalkulatorBMIPage` | BMI/BMR/TDEE calculator with results, map, chart |
-| `/menu` | `MenuPage` | Recipe directory with search and filter |
-| `/menu/[slug]` | `MenuDetailPage` | Recipe detail with nutritional info |
-| `/artikel` | `ArtikelPage` | Article directory with category filter |
-| `/artikel/[slug]` | `ArtikelDetailPage` | Full article view |
-| `/lokasi` | `LokasiPage` | Sports facility map + list view |
-| `/scan-makanan` | `ScanMakananPage` | Food scan history (web view) |
-| `/profile` | `ProfilePage` | User profile editing |
+| Rute URL | Komponen Utama | Aksesibilitas | Deskripsi Fungsional |
+|---|---|---|---|
+| `/` | `Home` (`page.tsx`) | Publik | Halaman beranda dengan hero interaktif, *Live Health Snapshot* card, 4 pilar hidup sehat, 3 langkah kebugaran, dan showcase konten terbaru. |
+| `/kalkulator` | `KalkulatorBMIPage` (`page.tsx`) | Publik & Member | Kalkulator BMI/BMR/TDEE dengan WHO 4-zone gauge meter, estimasi makrogizi, grafik riwayat, tab menu rekomendasi, dan peta fasilitas olahraga terdekat. |
+| `/menu` | `MenuPage` (`page.tsx`) | Publik | Direktori resep makanan sehat dengan pencarian teks (debounce 400ms), filter kategori status gizi, dan paginasi kartu resep. |
+| `/menu/[slug]` | `MenuDetailPage` (`page.tsx`) | Publik | Detail lengkap resep menu: foto, kalori, waktu masak, deskripsi bahan & instruksi, serta rekomendasi menu serupa. Otomatis menambah counter pembaca. |
+| `/artikel` | `ArtikelPage` (`page.tsx`) | Publik | Portal artikel edukatif dengan artikel unggulan (*featured banner*), filter kategori dinamis, dan pencarian artikel. |
+| `/artikel/[slug]` | `ArtikelDetailPage` (`page.tsx`) | Publik | Tampilan artikel lengkap dengan format kaya HTML (Tiptap render), data penulis, tanggal publikasi, dan artikel terkait. Otomatis menambah counter baca. |
+| `/lokasi` | `LokasiPage` (`page.tsx`) | Publik | Peta interaktif fasilitas olahraga berbasis Leaflet dengan geolokasi browser, perhitungan jarak, filter kategori (gym, lapangan, low_impact), dan tautan Google Maps. |
+| `/scan-makanan` | `ScanMakananPage` (`page.tsx`) | Publik & Member | Halaman pemindaian barcode produk makanan kemasan, ringkasan informasi gizi produk, dan daftar riwayat pemindaian pribadi pengguna. |
+| `/profile` | `ProfilePage` (`page.tsx`) | Terautentikasi | Pengaturan data akun pengguna: nama, username unik, telepon, tanggal lahir, update fisik TB/BB, upload avatar ke Cloudinary, dan ubah kata sandi. |
 
-### Auth Pages (`/(auth)`)
+### 6.2. Authentication Routes (`app/(auth)`)
 
-| Route | Component | Description |
-|---|---|---|
-| `/login` | `LoginPage` / `LoginClient` | Email/password + Google sign-in |
-| `/register` | `RegisterPage` | Account creation |
+| Rute URL | Komponen Utama | Aksesibilitas | Deskripsi Fungsional |
+|---|---|---|---|
+| `/login` | `LoginPage` / `LoginClient` | Publik (Guest) | Formulir masuk menggunakan email & password atau tombol masuk sekali klik dengan Google OAuth. |
+| `/register` | `RegisterPage` | Publik (Guest) | Formulir pendaftaran akun baru dengan validasi Zod (nama min 2 karakter, email valid, password min 8 karakter kombinasi huruf & angka) serta pendaftaran Google OAuth. |
 
-### Admin Pages (`/(admin)/admin`)
+### 6.3. Admin Management Routes (`app/(admin)/admin`)
 
-| Route | Component | Description |
-|---|---|---|
-| `/admin/dashboard` | `BerandaPage` | Dashboard analytics |
-| `/admin/menu` | `MenuPage` | Menu management table |
-| `/admin/menu/create` | `CreateMenuPage` | Create recipe form |
-| `/admin/menu/[slug]/edit` | `EditMenuPage` | Edit recipe form |
-| `/admin/artikel` | `ArtikelPage` | Article management table |
-| `/admin/artikel/create` | `CreateArtikelPage` | Create article with Tiptap editor |
-| `/admin/artikel/[slug]/edit` | `EditArtikelPage` | Edit article |
-| `/admin/lokasi` | `LokasiAdminPage` | Location management table |
-| `/admin/lokasi/create` | `CreateLokasiPage` | Create location with map picker |
-| `/admin/lokasi/[id]/edit` | `EditLokasiPage` | Edit location |
-| `/admin/pengguna` | `PenggunaPage` | User management |
-| `/admin/profile` | `AdminProfilePage` | Admin profile settings |
+| Rute URL | Komponen Utama | Aksesibilitas | Deskripsi Fungsional |
+|---|---|---|---|
+| `/admin/dashboard` | `BerandaPage` (`page.tsx`) | Khusus Admin | Dasbor analitik dengan kartu metrik animated-counter (Total User, User Aktif, Total Menu, Total Artikel), 5 pengguna terbaru, dan 5 menu terpopuler. |
+| `/admin/master-makanan` | `MasterMakananPage` (`page.tsx`) | Khusus Admin | Manajemen katalog master barcode makanan: pencarian, filter sumber, sorting, verifikasi cepat status resmi, modal edit gizi, dan penambahan produk baru. |
+| `/admin/menu` | `MenuPage` (`page.tsx`) | Khusus Admin | Tabel data resep menu sehat dengan paginasi, pencarian, dan tombol aksi hapus/edit. |
+| `/admin/menu/create` | `CreateMenuPage` (`page.tsx`) | Khusus Admin | Formulir penambahan menu baru dengan upload foto Cloudinary, input kalori, waktu memasak, dan target status gizi. |
+| `/admin/menu/[slug]/edit` | `EditMenuPage` (`page.tsx`) | Khusus Admin | Formulir perbaikan data menu resep yang sudah ada. |
+| `/admin/artikel` | `ArtikelPage` (`page.tsx`) | Khusus Admin | Tabel artikel kesehatan dengan status unggulan (*featured*), jumlah dibaca, dan aksi kelola. |
+| `/admin/artikel/create` | `CreateArtikelPage` (`page.tsx`) | Khusus Admin | Formulir pembuatan artikel dengan Rich Text Editor Tiptap (formatting teks, gambar, tautan, code block). |
+| `/admin/artikel/[slug]/edit` | `EditArtikelPage` (`page.tsx`) | Khusus Admin | Formulir penyuntingan artikel dan pembaruan banner/konten. |
+| `/admin/lokasi` | `LokasiAdminPage` (`page.tsx`) | Khusus Admin | Tabel data fasilitas olahraga dengan koordinat geografis dan kategori. |
+| `/admin/lokasi/create` | `CreateLokasiPage` (`page.tsx`) | Khusus Admin | Formulir penambahan lokasi olahraga baru dengan pemilih pin peta interaktif (`LokasiPickerMap`) dan geocoding balik Nominatim. |
+| `/admin/lokasi/[id]/edit` | `EditLokasiPage` (`page.tsx`) | Khusus Admin | Formulir penyuntingan data lokasi dan reposisi koordinat peta. |
+| `/admin/pengguna` | `PenggunaPage` (`page.tsx`) | Khusus Admin | Tabel daftar seluruh pengguna terdaftar, saklar aktivasi/penangguhan akun, dan penghapusan permanen akun. |
+| `/admin/profile` | `AdminProfilePage` (`page.tsx`) | Khusus Admin | Pengaturan profil akun administrator dan pergantian kata sandi. |
 
-### API Routes (`/api`)
+### 6.4. API Endpoints (`app/api`)
 
-| Endpoint | Methods | Auth |
-|---|---|---|
-| `/api/auth/register` | POST | Public |
-| `/api/auth/login` | POST | Public |
-| `/api/auth/google` | POST | Public |
-| `/api/auth/me` | GET | Authenticated |
-| `/api/auth/logout` | POST | Public |
-| `/api/accounts` | GET | Admin |
-| `/api/accounts/[id]` | PATCH, DELETE | Admin |
-| `/api/admin/dashboard` | GET | Admin |
-| `/api/profile` | GET, PATCH | Authenticated |
-| `/api/profile/password` | PATCH | Authenticated |
-| `/api/profile/upload` | POST | Authenticated |
-| `/api/perhitungan` | GET, POST, DELETE | Authenticated (POST also public) |
-| `/api/menus` | GET, POST | Public (GET), Admin (POST) |
-| `/api/menus/[slug]` | GET, PUT, DELETE | Public (GET), Admin (PUT/DELETE) |
-| `/api/upload/menu` | POST | Authenticated |
-| `/api/artikels` | GET, POST | Public (GET), Admin (POST) |
-| `/api/artikels/[slug]` | GET, PUT, DELETE | Public (GET), Admin (PUT/DELETE) |
-| `/api/lokasi-olahraga` | GET, POST | Public (GET), Admin (POST) |
-| `/api/lokasi-olahraga/[id]` | GET, PUT, DELETE | Public (GET), Admin (PUT/DELETE) |
-| `/api/scan-makanan` | GET, DELETE | Authenticated |
-| `/api/scan-makanan/lookup` | POST | Public |
-| `/api/scan-makanan/save` | POST | Authenticated |
-| `/api/chat` | POST | Authenticated |
+| Endpoint API | Metode HTTP | Tingkat Akses | Deskripsi & Operasi Data |
+|---|---|---|---|
+| `/api/auth/register` | `POST` | Publik | Mendaftarkan akun lokal baru dengan enkripsi kata sandi `bcryptjs`. |
+| `/api/auth/login` | `POST` | Publik | Verifikasi kredensial lokal dan penerbitan token JWT cookie (7 hari). |
+| `/api/auth/google` | `POST` | Publik | Otentikasi Google OAuth untuk Web (`access_token`) dan Mobile (`id_token`). |
+| `/api/auth/me` | `GET` | Terautentikasi | Mengambil identitas pengguna yang sedang masuk dari token sesi. |
+| `/api/auth/logout` | `POST` | Publik | Menghapus cookie sesi `token` dan mengakhiri sesi. |
+| `/api/profile` | `GET`, `PATCH` | Terautentikasi | Membaca dan memperbarui atribut profil fisik (nama, username, HP, TB, BB, tgl lahir). |
+| `/api/profile/password` | `PATCH` | Terautentikasi | Memperbarui kata sandi akun lokal dengan verifikasi kata sandi lama. |
+| `/api/profile/upload` | `POST` | Terautentikasi | Mengunggah foto avatar pengguna ke Cloudinary (auto-crop 400x400 face focus). |
+| `/api/perhitungan` | `GET`, `POST`, `DELETE` | Terautentikasi / Publik | Menghitung parameter gizi, menyimpan ke DB, dan mengambil 10 riwayat kalkulasi terakhir. |
+| `/api/menus` | `GET`, `POST` | Publik (GET), Admin (POST) | Mengambil daftar resep berpaginasi dan membuat menu resep baru. |
+| `/api/menus/[slug]` | `GET`, `PUT`, `DELETE` | Publik (GET), Admin (PUT/DEL) | Mengambil detail menu, memperbarui data, atau menghapus menu. |
+| `/api/upload/menu` | `POST` | Terautentikasi / Admin | Mengunggah gambar resep makanan ke folder Cloudinary `fitlife/menus`. |
+| `/api/artikels` | `GET`, `POST` | Publik (GET), Admin (POST) | Mengambil daftar artikel berpaginasi dan mempublikasikan artikel baru. |
+| `/api/artikels/[slug]` | `GET`, `PUT`, `DELETE` | Publik (GET), Admin (PUT/DEL) | Mengambil detail artikel, menyunting isi artikel, atau menghapus artikel. |
+| `/api/lokasi-olahraga` | `GET`, `POST` | Publik (GET), Admin (POST) | Mengambil daftar fasilitas olahraga atau mendaftarkan lokasi baru. |
+| `/api/lokasi-olahraga/[id]` | `GET`, `PUT`, `DELETE` | Publik (GET), Admin (PUT/DEL) | Mengambil detail lokasi, mengubah koordinat/alamat, atau menghapus lokasi. |
+| `/api/scan-makanan/lookup` | `POST` | Publik | Pencarian gizi barcode 3-Tier (Redis Cache -> DB Master -> Open Food Facts). |
+| `/api/scan-makanan/save` | `POST` | Terautentikasi | Menyimpan produk hasil pemindaian ke riwayat pribadi & sinkronisasi ke DB master. |
+| `/api/scan-makanan/upload` | `POST` | Terautentikasi | Mengunggah foto produk makanan ke folder Cloudinary `fitlife/foods`. |
+| `/api/scan-makanan` | `GET`, `DELETE` | Terautentikasi | Mengambil daftar riwayat scan pribadi pengguna dan menghapus item riwayat. |
+| `/api/admin/master-makanan` | `GET`, `POST` | Khusus Admin | Mengambil daftar master makanan berpaginasi/filter/sort dan menambah produk baru. |
+| `/api/admin/master-makanan/[id]` | `GET`, `PUT`, `DELETE` | Khusus Admin | Detail produk, ubah data/status verifikasi cepat, dan hapus dari master + Redis. |
+| `/api/admin/dashboard` | `GET` | Khusus Admin | Mengambil metrik agregat dasbor (pengguna, menu terpopuler, artikel). |
+| `/api/accounts` | `GET` | Khusus Admin | Mengambil seluruh daftar akun terdaftar dengan parameter pencarian dan status. |
+| `/api/accounts/[id]` | `PATCH`, `DELETE` | Khusus Admin | Mengubah status aktif/nonaktif akun atau menghapus akun secara permanen (cascade). |
+| `/api/chat` | `POST` | Terautentikasi | Endpoint percakapan FitBot AI dengan shortcut lokal dan integrasi Groq Cloud. |
 
 ---
 
 ## 7. Navigation Structure
 
-### Client Navbar
+### 7.1. Navigasi Client (`components/client/Navigasi.tsx`)
 
+Header navigasi berada di posisi `sticky top-0 z-[1010]` dengan efek latar transparan `backdrop-blur-md`:
 ```
-Logo (Fitlife.id) → Home | Menu | Artikel | Kalkulator | Lokasi | Scan Makanan
-                                                           [Theme Toggle] [Profile Avatar / Login]
+[Brand Logo: FitLife.id]
+  ├── Home (/)
+  ├── Kalkulator BMI (/kalkulator)
+  ├── Menu Sehat (/menu)
+  ├── Artikel (/artikel)
+  ├── Lokasi (/lokasi)
+  └── Riwayat Scan (/scan-makanan) [Ikon ScanLine]
+  ── [Theme Toggle Button: Sun/Moon]
+  ── [NavProfile Component: Dropdown Avatar Pengguna / Tombol Masuk]
 ```
+- **Komponen NavProfile**: Jika belum login menampilkan tombol `Masuk` dan `Daftar`. Jika sudah login menampilkan avatar foto, nama akun, menu link ke `/profile`, dan opsi `Keluar`. Mendengarkan custom event window `profile:updated` untuk sinkronisasi avatar langsung tanpa reload.
+- **Floating Chatbot Button**: Tombol mengambang di kanan bawah yang memicu overlay percakapan FitBot AI.
 
-- `NavProfile` component shows avatar dropdown with links to Profile and Logout.
-- Floating `ChatButton` opens the AI assistant overlay.
+### 7.2. Navigasi Admin (`components/admin/sidebar.tsx`)
 
-### Admin Sidebar
-
+Sidebar navigasi berada di sisi kiri (`w-64`) dengan dukungan penarikan mobile drawer:
 ```
-Dashboard
-├── Menu
-├── Artikel
-├── Lokasi
-├── Pengguna
-└── Profile
+[Brand Logo: FitLife Admin]
+  ├── 1. Beranda (/admin/dashboard) [Ikon Home]
+  ├── 2. Master Scan Makanan (/admin/master-makanan) [Ikon ScanBarcode]
+  ├── 3. Menu Sehat (/admin/menu) [Ikon Utensils]
+  ├── 4. Artikel (/admin/artikel) [Ikon NotebookText]
+  ├── 5. Lokasi Olahraga (/admin/lokasi) [Ikon MapPin]
+  └── 6. Pengguna (/admin/pengguna) [Ikon Users]
+  ── [Profil Admin Link: /admin/profile]
+  ── [Tombol Logout dengan Konfirmasi Loading State]
 ```
-
-- Collapsible sidebar with mobile overlay support.
-- Framer Motion page transitions.
 
 ---
 
 ## 8. Feature Details
 
-### 8.1 BMI / BMR / TDEE Health Calculator
+### 8.1. Kalkulator Kesehatan Multi-Parameter (`/kalkulator`)
+- **Masukan Data**: Gender (*pria/wanita*), Tinggi Badan (*cm*), Berat Badan (*kg*), Usia (*tahun*), dan Tingkat Aktivitas Fisik (*rebahan, ringan, sedang, berat*).
+- **Logika Perhitungan Instan**: Dijalankan langsung di browser menggunakan fungsi murni `hitungAnalisisKesehatan()` dalam `lib/kesehatan.ts`. Tidak memerlukan round-trip jaringan untuk melihat hasil visual awal.
+- **WHO 4-Zone Curved Gauge Meter**: Jarum penunjuk visual melengkung interaktif yang memetakan nilai BMI ke dalam 4 zona warna terstandar WHO:
+  - *Kurus (Underweight)*: `< 18.5` (Biru Lembut)
+  - *Normal (Healthy Weight)*: `18.5 – < 25.0` (Emerald Sehat)
+  - *Berlebih (Overweight)*: `25.0 – < 30.0` (Kuning-Amber)
+  - *Obesitas (Obese)*: `≥ 30.0` (Merah-Rose)
+- **Kartu Metrik Lengkap**:
+  - **BMR (Basal Metabolic Rate)**: Dihitung menggunakan persamaan Mifflin-St Jeor.
+  - **TDEE (Total Daily Energy Expenditure)**: BMR dikalikan faktor aktivitas harian (1.2, 1.375, 1.55, 1.725).
+  - **Rentang Berat Badan Ideal**: Rentang aman BMI normal `[18.5 × TB(m)², 24.9 × TB(m)²]`.
+  - **Distribusi Makronutrien Harian**: Rekomendasi gramatur protein (`1.4g × BB`), lemak (`30% TDEE / 9`), dan karbohidrat dari sisa kalori harian (`(TDEE - (P×4) - (L×9)) / 4`).
+- **Integrasi Konten**: Menampilkan tab menu rekomendasi yang sesuai dengan target status gizi dan memuat peta Leaflet lokasi olahraga terdekat sesuai kebutuhan latihan fisik.
 
-- **Input**: Gender (Pria/Wanita), Height (cm), Weight (kg), Age, Activity Level (Rebahan/Ringan/Sedang/Berat).
-- **Output**: BMI value + status category, BMR, TDEE, ideal weight range, protein/fat/carbs recommendations.
-- **Client-side preview**: Instant calculation via `lib/kesehatan.ts` before form submission.
-- **Persistence**: Authenticated users' results stored in `Perhitungan` table; weight/height synced to `Account`.
-- **History**: GET endpoint returns last 10 calculations; chart visualization via `BMIRiwayatChart`.
-- **Recommended content**: Menus and sports venues filtered by calculated BMI status.
+### 8.2. Arsitektur Pemindaian Barcode 3-Tier (`/scan-makanan` & `/api/scan-makanan/*`)
+- **Tier 1 (Redis In-Memory Cache)**: Pencarian instan berdasarkan kunci `food:barcode:<barcode>` dengan TTL 7 hari. Menghasilkan latensi < 15ms.
+- **Tier 2 (Database Master Komunitas)**: Memeriksa tabel `master_makanan`. Jika ditemukan, counter `scan_count` ditambah secara asinkron dan data disimpan ulang ke Redis cache.
+- **Tier 3 (Open Food Facts API)**: Fallback otomatis ke API publik Open Food Facts. Data yang berhasil diambil dinormalisasi per 100g, di-upsert ke database `master_makanan`, dan di-cache ke Redis.
+- **Klasifikasi Sumber Produk**:
+  - `verified`: Diverifikasi langsung oleh tim kurator administrator FitLife.
+  - `community`: Kontribusi data dari pengguna aplikasi web atau mobile.
+  - `openfoodfacts`: Bersumber dari basis data terbuka global Open Food Facts.
+- **Upload Media Produk**: Endpoint `/api/scan-makanan/upload` menerima foto produk (maksimal 5MB, format JPG/PNG/WEBP) dan menyimpannya di Cloudinary folder `fitlife/foods`.
 
-### 8.2 Healthy Recipe Directory
+### 8.3. Admin Master Scan Makanan (`/admin/master-makanan`)
+- **Dashboard Statistik Agregat**: Kartu metrik total produk dalam katalog, produk berstatus terverifikasi resmi, produk hasil kontribusi komunitas, produk dari database Open Food Facts, dan akumulasi total frekuensi pemindaian (didukung cache Redis 60 detik `admin:stats:master_makanan`).
+- **Fitur Toolbar & Filter**: Pencarian teks debounce 400ms pada barcode/nama/brand, tab filter sumber, dan dropdown pengurutan (`scan_count`, `created_at`, `nama_makanan`).
+- **Verifikasi Cepat (Quick Verify)**: Tombol aksi langsung untuk menaikkan status produk komunitas menjadi `verified` dengan pembaruan cache Redis seketika.
+- **Modal Editing Gizi**: Modal antarmuka untuk menyesuaikan nilai nutrisi makro (Kalori, Protein, Lemak, Karbohidrat, Gula).
+- **Penghapusan Bersih**: Menghapus produk dari database sekaligus menghapus kunci cache terkait di Redis.
 
-- **Filtering**: By `TargetStatus` enum (Kurus, Normal, Berlebih, Obesitas), debounced text search (400ms).
-- **Pagination**: Client-side, 9 items per page.
-- **Detail page**: Shows cover image, calorie count, cooking time, target category, full description, and related recipes.
-- **Read counter**: Auto-incremented on detail page view (`dibaca: { increment: 1 }`).
-- **Admin CRUD**: Full create/edit/delete with Cloudinary image upload, Zod validation (`MenuSchema`).
-
-### 8.3 Health Article CMS
-
-- **Content**: Rich HTML via Tiptap WYSIWYG editor (bold, italic, underline, headings, lists, images, links, code blocks, text alignment, colors).
-- **Filtering**: By category (dynamic from data), featured toggle, debounced search.
-- **Read counter**: Auto-incremented on article detail view.
-- **Featured articles**: `is_featured` flag displayed prominently in hero sections.
-
-### 8.4 Sports Facility Locator
-
-- **Map**: Leaflet with custom markers, popup details, and Google Maps routing link.
-- **Categories**: `gym` (for underweight), `lapangan` (for normal BMI), `low_impact` (for overweight/obese).
-- **Geolocation**: Browser GPS detection with Haversine distance calculation to venues.
-- **Views**: Toggle between Map view and List card view.
-- **Admin**: Map picker component (`LokasiPickerMap`) with click-to-place pin, reverse geocoding, and location search.
-
-### 8.5 Food Barcode Scanner
-
-- **Lookup**: Queries Open Food Facts API with barcode (3–64 digit validation).
-- **Nutrition data**: Calories, protein, fat, carbohydrates, sugar per 100g.
-- **Save**: Persists scan history to `ScanMakanan` table for authenticated users.
-- **Web view**: History list with delete capability; promotional CTA for mobile app when not logged in.
-
-### 8.6 AI Health Chatbot (FitBot)
-
-- **Provider**: Groq Cloud API, model `qwen/qwen3.8-27b`.
-- **Context injection**: User's physical profile (height, weight) and latest BMI calculation from DB.
-- **Zero-token shortcuts**: Three predefined queries answered locally without LLM call.
-- **Guardrails**: Only responds to health/fitness/nutrition topics; refuses code generation requests.
-- **Resilience**: Exponential backoff retry (3 attempts, 2s/4s/8s) on HTTP 429 and 503.
-- **Sliding window**: Last 4 messages sent as conversation context.
-
-### 8.7 User Profile Management
-
-- **Editable fields**: Name, username (unique), phone, birthdate, weight, height.
-- **Avatar**: Drag-and-drop upload to Cloudinary (max 2MB, jpg/png/webp, auto-crop 400×400 face focus).
-- **Password change**: Requires current password verification; min 8 chars, bcrypt salt 12.
-- **Cross-component sync**: `profile:updated` custom event broadcasts avatar changes to Navbar.
-
-### 8.8 Admin Dashboard
-
-- **Stats cards**: Total users, active users, total menus, total articles (animated counters).
-- **Top content**: 5 most-viewed menus, 5 newest registered users.
-- **User management**: Activate/suspend toggle, permanent deletion with cascade.
+### 8.4. FitBot AI Health Assistant (`/api/chat`)
+- **Model Dasar**: Groq Cloud LLM `qwen/qwen3.8-27b` dengan pembatasan suhu rendah (`temperature: 0.2`) dan batas keluaran padat (`max_tokens: 350`).
+- **Zero-Token Local Shortcuts**: Menangani perintah spesifik secara lokal tanpa memanggil LLM:
+  - `"cek tinggi & berat badan"`: Menampilkan data fisik pengguna dari database.
+  - `"status bmi terakhir"`: Menampilkan riwayat kalkulasi terakhir dari database.
+  - `"hitung kalori harian"`: Melakukan perhitungan Mifflin-St Jeor lokal.
+- **Injeksi Konteks Profil**: Menyuntikkan rangkuman data fisik terkini (Nama, TB, BB, skor BMI terakhir) ke dalam *system prompt* (~80 token) untuk personalisasi jawaban.
+- **Guardrails Ketat**: Sistem secara eksplisit menolak topik di luar kesehatan, nutrisi, makanan sehat, diet, dan kebugaran, serta menolak permintaan penulisan kode/pemrograman.
+- **Ketahanan Jaringan (Resilience)**: Menerapkan mekanisme *exponential backoff retry* (maksimal 3 kali: 2s, 4s, 8s) ketika menemui status HTTP 429 (rate limit) atau 503 (overload).
 
 ---
 
 ## 9. Existing UI / Design System
 
-### Component Library
+### 9.1. Filosofi & Token Desain (Health & Wellness Theme)
 
-| Component | Source | Usage |
+Sistem antarmuka FitLife menggunakan **Tailwind CSS v4** dengan palet warna klinis alami bertema kebugaran (*Health & Wellness*):
+
+| Kategori Token | Nama Token CSS | Nilai Warna (Light Mode) | Nilai Warna (Dark Mode) | Karakteristik & Penggunaan |
+|---|---|---|---|---|
+| **Primary Brand** | `--color-primary` / `--primary` | `#10b981` | `#10b981` | Vital Emerald (Daun Alami), aksen utama dan tombol aksi. |
+| **Primary Hover** | `--color-primary-hover` | `#059669` | `#059669` | Emerald Gelap untuk status hover interaktif. |
+| **Latar Belakang** | `--background` | `#f8fafc` (Slate 50) | `#0b1a14` (Botanical Dark Green) | Latar dasar non-agresif dengan nuansa hijau botani alami yang sejuk. |
+| **Kartu / Surface** | `--card` | `#ffffff` (Putih Bersih) | `#11261d` (Forest Pine Card) | Latar kontainer komponen dan kartu data. |
+| **Garis / Border** | `--border` / `--color-card-border` | `#e2e8f0` (Slate 200) | `#1c3e30` (Herbal Green Border) | Garis tepi halus dengan kontras seimbang. |
+| **Teks Utama** | `--foreground` / `--color-text-light` | `#0f172a` (Slate 900) | `#f2f9f5` (Fresh Mint White) | Keterbacaan tinggi untuk judul dan angka penting. |
+| **Teks Sekunder** | `--muted-foreground` / `--color-text-muted` | `#64748b` (Slate 500) | `#8fa89b` (Soft Sage) | Label keterangan dan teks pelengkap. |
+
+### 9.2. Tipografi & Radius
+- **Font Utama**: `Inter` (`--font-sans`, sans-serif) yang dimuat via Google Fonts.
+- **Radius Sudut**: `--radius: 0.5rem` (base), `--radius-xl: 1rem` (kontainer sedang), `--radius-2xl: 1.5rem` (kartu utama & modal).
+
+### 9.3. Komponen Pustaka Antarmuka (Component Library)
+
+| Nama Komponen | Sumber / Pustaka | Peruntukan Fungsional |
 |---|---|---|
-| `Button` | shadcn/ui (CVA + Tailwind) | Primary action buttons across forms |
-| `Card`, `CardHeader`, `CardTitle`, etc. | shadcn/ui | Content cards for menus, articles, stats |
-| `Input`, `Label` | shadcn/ui | Form inputs |
-| `AuthLink` | Custom | Navigation links on auth pages |
-| `SubmitButton` | Custom | Loading-state submit button |
-| `AuthLayout` | Custom | Auth page container with branded hero |
-| `LayoutAdmin` | Custom | Admin shell with sidebar/header |
-| `RichTextEditor` | Custom (Tiptap) | WYSIWYG article content editor |
-| `LokasiPickerMap` | Custom (Leaflet) | Interactive map pin picker |
-| `LokasiMap` | Custom (Leaflet) | Read-only map display for client |
-| `HomeRecentContent` | Custom | Paginated recent menus/articles widget |
-| `NavProfile` | Custom | Avatar dropdown with logout |
-| `TrueFocus` | Custom | Animated text effect on 404 page |
-| `ThemeProvider` | next-themes | Dark/light mode wrapper |
-| `BMIRiwayatChart` | Custom | BMI history line chart |
-| `Toaster` | Sonner | Toast notifications |
-
-### Design Tokens
-
-- **Font**: Inter (Google Fonts).
-- **Theme**: Dark/light mode via `next-themes` with CSS class strategy.
-- **Utility**: `cn()` helper combining `clsx` + `tailwind-merge` for conditional class merging.
-- **Icons**: Lucide React, React Icons.
-- **Animations**: Framer Motion (page transitions, counter animations), GSAP.
-- **Toasts**: Sonner (`top-center`, rich colors).
+| `Button`, `Card`, `Input`, `Label` | shadcn/ui (CVA + Tailwind) | Elemen formulir dasar, kartu metrik, dan tombol interaksi. |
+| `RichTextEditor` | Kustom (`@tiptap/*`) | Editor artikel dengan toolbar (Heading, List, Image, Color, Code). |
+| `LokasiPickerMap` | Kustom (`leaflet`, OSM) | Pemilih koordinat interaktif admin dengan reverse geocoding Nominatim. |
+| `LokasiMap` | Kustom (`leaflet`, OpenStreetMap) | Tampilan peta fasilitas olahraga publik dengan marker kustom dan link rute. |
+| `BMIRiwayatChart` | Kustom (Canvas / SVG) | Visualisasi tren perkembangan indeks massa tubuh pengguna. |
+| `HomeRecentContent` | Kustom | Showcase artikel dan menu terkini di halaman beranda. |
+| `NavProfile` | Kustom | Dropdown profil pengguna dengan sinkronisasi avatar seketika. |
+| `ThemeProvider` | `next-themes` | Penyedia konteks peralihan Light Mode dan Dark Mode. |
+| `Toaster` | `sonner` | Notifikasi mengambang (*rich toast*) untuk umpan balik aksi. |
 
 ---
 
 ## 10. Database Entities and Relationships
 
+Arsitektur database FitLife dikelola oleh PostgreSQL dan dimodelkan secara terpisah di dalam direktori `prisma/models/`:
+
 ```mermaid
 erDiagram
-    Account ||--o{ Perhitungan : "has many"
-    Account ||--o{ LokasiOlahraga : "creates"
-    Account ||--o{ ScanMakanan : "has many"
-    Menu }o--|| TargetStatus : "categorized by"
-    Perhitungan }o--|| Account : "belongs to"
-    LokasiOlahraga }o--|| Account : "belongs to"
-    ScanMakanan }o--|| Account : "belongs to"
+    Account ||--o{ Perhitungan : "memiliki riwayat"
+    Account ||--o{ LokasiOlahraga : "mendaftarkan lokasi"
+    Account ||--o{ ScanMakanan : "menyimpan riwayat scan"
+    Account ||--o{ MasterMakanan : "berkontribusi produk"
+    Menu }o--|| TargetStatus : "diklasifikasikan oleh"
 
     Account {
         int id PK
@@ -404,16 +417,18 @@ erDiagram
         string username UK
         string email UK
         string google_id
-        string role
-        string password
-        boolean is_active
+        string role "user | admin"
+        string password "bcrypt hash"
+        boolean is_active "default: true"
         datetime last_login_at
         string phone
         datetime birthdate
-        float weight
-        float height
-        string photo
+        int weight "dalam kg"
+        int height "dalam cm"
+        string photo "URL Cloudinary"
         string google_avatar
+        datetime created_at
+        datetime updated_at
     }
 
     Menu {
@@ -421,11 +436,14 @@ erDiagram
         string nama_menu
         string slug UK
         text deskripsi
-        int kalori
-        enum target_status
-        int waktu_memasak
-        int dibaca
-        string gambar
+        int kalori "kkal"
+        enum target_status "Kurus|Normal|Berlebih|Obesitas"
+        int waktu_memasak "menit"
+        int biaya_per_porsi "Rp"
+        int dibaca "counter tayangan"
+        string gambar "URL Cloudinary"
+        datetime created_at
+        datetime updated_at
     }
 
     Artikel {
@@ -433,21 +451,43 @@ erDiagram
         string judul
         string slug UK
         string kategori
-        string penulis
-        text isi
-        string gambar
-        boolean is_featured
-        int dibaca
+        string penulis "default: Admin"
+        text isi "HTML Tiptap"
+        string gambar "URL Cloudinary"
+        boolean is_featured "default: false"
+        int dibaca "counter tayangan"
+        datetime created_at
+        datetime updated_at
     }
 
     LokasiOlahraga {
         int id PK
         string name
-        string category
+        string category "lapangan|gym|low_impact"
         string address
         float latitude
         float longitude
         int user_id FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    MasterMakanan {
+        int id PK
+        string barcode UK "index unik"
+        string nama_makanan
+        string brand
+        string image_url
+        float kalori "kkal per 100g"
+        float protein "gram"
+        float lemak "gram"
+        float karbohidrat "gram"
+        float gula "gram"
+        string source "community|openfoodfacts|verified"
+        int contributor_id FK
+        int scan_count "frekuensi dipindai"
+        datetime created_at
+        datetime updated_at
     }
 
     Perhitungan {
@@ -456,7 +496,7 @@ erDiagram
         float tinggi_badan
         float berat_badan
         float bmi
-        string status
+        string status "Kurus|Normal|Berlebih|Obesitas"
         string gender
         int usia
         string aktivitas
@@ -468,6 +508,8 @@ erDiagram
         float protein
         float karbohidrat
         float lemak
+        datetime created_at
+        datetime updated_at
     }
 
     ScanMakanan {
@@ -482,338 +524,280 @@ erDiagram
         float lemak
         float karbohidrat
         float gula
+        datetime created_at
     }
 ```
 
-**Cascade delete**: Deleting an `Account` cascades to `Perhitungan`, `LokasiOlahraga`, and `ScanMakanan`.
-
-**Standalone tables**: `Menu` and `Artikel` have no foreign key relationships — they are content entities managed by admins.
+### Aturan Relasi & Integritas Data
+- **Cascade Delete**: Menghapus `Account` secara otomatis menghapus seluruh rekaman anak pada tabel `Perhitungan`, `LokasiOlahraga`, dan `ScanMakanan`.
+- **Set Null pada Kontribusi**: Jika akun dihapus, relasi `contributor_id` pada tabel `MasterMakanan` diatur menjadi `NULL` (`onDelete: SetNull`) agar data katalog produk tidak hilang.
+- **Entitas Mandiri**: Entitas `Menu` dan `Artikel` beroperasi sebagai katalog independen tanpa ketergantungan relasi langsung ke akun pembuat.
 
 ---
 
 ## 11. Prisma Schema and Important Models
 
-- **Generator**: `prisma-client-js`, output to `../generated/prisma`.
-- **Datasource**: PostgreSQL via `@prisma/adapter-pg`.
-- **Enum**: `TargetStatus` — `Kurus | Normal | Berlebih | Obesitas`.
-- **6 Models**: `Account`, `Menu`, `Artikel`, `LokasiOlahraga`, `Perhitungan`, `ScanMakanan`.
-- **3 Migrations**:
-  1. `20260318173822_add_slug_menu` — initial schema with accounts, menus, artikels, makanan, perhitungan.
-  2. `20260414135955_add_lokasi_favorit` — added `lokasi_olahraga` table.
-  3. `20260919112000_add_scan_makanan` — added `scan_makanan` table.
-- **Factories**: `artikelFactory.ts` and `menuFactory.ts` for seed data generation using `@faker-js/faker`.
+- **Konfigurasi Generator**: Menggunakan `prisma-client` dengan berkas keluaran khusus ke `../generated/prisma`. Diimpor ke seluruh kode menggunakan path alias `@/lib/prisma`.
+- **Datasource**: PostgreSQL menggunakan adaptor koneksi langsung `@prisma/adapter-pg`.
+- **Struktur Multi-File Skema**: Model database dipisahkan secara modular ke dalam direktori `prisma/models/`:
+  1. `account.prisma`: Entitas pengguna, autentikasi lokal, Google OAuth, data fisik tubuh.
+  2. `menu.prisma`: Resep makanan sehat, enum `TargetStatus`, dan nutrisi kalori.
+  3. `artikel.prisma`: Artikel kesehatan edukatif, slug unik, dan status unggulan.
+  4. `lokasiOlahraga.prisma`: Fasilitas olahraga dengan koordinat lintang & bujur.
+  5. `masterMakanan.prisma`: Basis data master barcode makanan kemasan, status verifikasi, dan pelacak kontributor.
+  6. `perhitungan.prisma`: Riwayat analisis kesehatan, parameter BMI/BMR/TDEE dan makronutrien.
+  7. `scanMakanan.prisma`: Riwayat pemindaian barcode pribadi milik pengguna.
+- **Riwayat Migrasi Resmi**:
+  1. `20260318173822_add_slug_menu`: Skema awal akun, menu, artikel, dan perhitungan.
+  2. `20260414135955_add_lokasi_favorit`: Penambahan tabel `lokasi_olahraga`.
+  3. `20260919112000_add_scan_makanan`: Penambahan tabel `scan_makanan`.
+  4. Sinkronisasi tabel `master_makanan` via Prisma schema push.
 
 ---
 
 ## 12. API / Backend Integrations
 
-### Internal API (Next.js Route Handlers)
+### 12.1. Layanan Eksternal & Integrasi Pihak Ketiga
 
-23 route files organized by resource. See [Section 6](#6-page--route-inventory) for the complete list.
-
-### External Services
-
-| Service | Purpose | Integration Point |
+| Nama Layanan | Tujuan & Peruntukan | Jalur Integrasi & Komponen |
 |---|---|---|
-| **Cloudinary** | Image upload and transformation | `POST /api/profile/upload`, `POST /api/upload/menu` |
-| **Google OAuth** | Social authentication | `POST /api/auth/google` (web: userinfo API, mobile: tokeninfo API) |
-| **Open Food Facts** | Barcode nutrition lookup | `POST /api/scan-makanan/lookup` |
-| **Groq Cloud** | AI chat inference | `POST /api/chat` (model: `qwen/qwen3.8-27b`) |
-| **Nominatim / OSM** | Reverse geocoding in map picker | `LokasiPickerMap` component (client-side) |
+| **Redis (Upstash / Local)** | In-memory cache produk barcode (TTL 7 hari) dan cache statistik agregat admin (TTL 60s). | `lib/redis.ts`, dipanggil di `/api/scan-makanan/lookup` dan `/api/admin/master-makanan/*`. |
+| **Cloudinary v2 SDK** | Penyimpanan aset gambar teroptimasi: avatar profil, gambar menu, dan foto produk makanan. | `/api/profile/upload`, `/api/upload/menu`, `/api/scan-makanan/upload`. |
+| **Open Food Facts API** | Pencarian data gizi produk barcode internasional sebagai fallback Tier 3. | `lib/openfoodfacts.ts`, dipanggil di `/api/scan-makanan/lookup`. |
+| **Groq Cloud API** | Inferensi percakapan model bahasa besar (`qwen/qwen3.8-27b`) untuk asisten FitBot. | `app/api/chat/route.ts` dengan sistem retry exponential backoff. |
+| **Google Identity Services** | Otentikasi masuk sosial untuk Web (`oauth2/v3/userinfo`) dan Mobile (`tokeninfo`). | `app/api/auth/google/route.ts`. |
+| **OpenStreetMap / Nominatim** | Penyedia peta jalan Leaflet dan API reverse geocoding gratis. | `LokasiPickerMap.tsx`, `LokasiMap.tsx`. |
 
 ---
 
 ## 13. Authentication and Authorization
 
-### Token Mechanism
+### 13.1. Mekanisme Token JWT
+- **Pustaka Pembuat**: `jose` (enkripsi simetris HS256).
+- **Kunci Rahasia**: Didefinisikan pada variabel lingkungan `JWT_SECRET`.
+- **Payload Token**:
+  ```typescript
+  export type JWTPayload = {
+    userId: number;
+    role: string; // "user" | "admin"
+    email: string;
+  };
+  ```
+- **Masa Berlaku (Expiry)**: 7 hari sejak diterbitkan.
+- **Penyimpanan Sesi Web**: Disimpan dalam cookie HTTP-only bernama `token` dengan atribut `sameSite: "lax"`, `path: "/"`.
 
-- **Algorithm**: HS256 JWT via `jose` library.
-- **Secret**: `process.env.JWT_SECRET`.
-- **Payload**: `{ userId: number, role: string, email: string }`.
-- **Expiry**: 7 days.
-- **Storage**: HTTP-only secure cookie named `token` (web), `Authorization: Bearer` header (mobile/API).
+### 13.2. Resolusi Otentikasi Ganda (`getAuthUser`)
+Fungsi utilitas `getAuthUser(request: Request)` dalam `lib/auth.ts` menyelesaikan sesi pengguna dengan urutan prioritas:
+1. Memeriksa header HTTP `Authorization: Bearer <token>` (digunakan oleh klien aplikasi mobile dan integrasi API).
+2. Jika header tidak tersedia, memeriksa kuki sesi `token` dari `next/headers cookies()` (digunakan oleh aplikasi web).
+3. Melakukan verifikasi kriptografis tanda tangan token. Mengembalikan `JWTPayload` jika sah, atau `null` jika tidak valid / kedaluwarsa.
 
-### Auth Resolution (`getAuthUser`)
-
-1. Check `Authorization: Bearer <token>` header.
-2. Fallback to `token` cookie via `next/headers cookies()`.
-3. Verify JWT signature and return payload or `null`.
-
-### Authorization Levels
-
-| Level | Check | Applied to |
-|---|---|---|
-| **Public** | No auth required | Menu/article GET, barcode lookup, register, login |
-| **Authenticated** | Valid JWT with `userId` | Profile, perhitungan, scan history, chat, file upload |
-| **Admin** | Valid JWT with `role === "admin"` | All CRUD operations, dashboard, user management |
-
-### No Middleware
-
-There is no Next.js middleware file. Auth enforcement is handled per-route inside API handlers and client components via `getAuthUser()` calls.
+### 13.3. Penegakan Otorisasi (RBAC)
+- **Tingkat Publik**: Endpoint menu, artikel, lookup barcode, registrasi, login, dan kalkulasi instan.
+- **Tingkat Anggota (`role === "user"` atau `"admin"`)**: Akses profil, penyimpanan riwayat perhitungan, penyimpanan riwayat scan makanan, upload media pribadi, konsultasi FitBot.
+- **Tingkat Administrator (`role === "admin"`)**: Seluruh operasi penulisan/pembaruan/penghapusan katalog menu, artikel, lokasi olahraga, moderasi akun pengguna di `/api/accounts`, dan katalog master scan makanan di `/api/admin/master-makanan`.
 
 ---
 
 ## 14. State Management and Data Flow
 
-### Client-Side State
+### 14.1. Manajemen State di Sisi Klien
+- **Tanpa Pustaka Global State Tambahan**: Tidak mengadopsi Redux, Zustand, atau Jotai.
+- **React Hooks Standar**: Menggunakan `useState`, `useEffect`, `useCallback`, dan `useRef` di setiap komponen halaman.
+- **Konteks Global (React Context)**: `ChatContextProvider` membungkus layout klien untuk memelihara riwayat chat dan status jendela percakapan FitBot.
+- **Event Bus Kustom**: Menggunakan event browser kustom `window.dispatchEvent(new CustomEvent("profile:updated"))` untuk menyinkronkan foto profil terbaru dari halaman `/profile` ke komponen `NavProfile` di navbar tanpa memicu refresh halaman.
 
-- **No global state library** (no Redux, Zustand, Jotai).
-- **React `useState` / `useEffect`** for all local component state.
-- **Custom events**: `profile:updated` broadcasts avatar/name changes from profile page to `NavProfile` component.
-- **Context**: `ChatContextProvider` wraps client layout for AI chatbot state.
-
-### Data Fetching Pattern
-
-- **Client components** (`"use client"`) fetch data via `fetch()` calls to `/api/*` endpoints in `useEffect`.
-- **No server components** fetching data directly — all data flows through API routes.
-- **Optimistic UI**: Form submissions show loading states; success redirects or toast notifications.
-
-### Cookie-Based Session
-
-- JWT stored in HTTP-only cookie; no client-side token access for XSS protection.
-- Mobile clients use `Authorization` header instead.
+### 14.2. Pola Aliran Data
+- Seluruh pengambilan data di halaman klien (`"use client"`) menggunakan fungsi asynchronous `fetch()` menuju Next.js Route Handlers (`/api/*`).
+- Formulir dan aksi dilengkapi dengan *optimistic UI feedback* dan *loading state* (menggunakan ikon animasi `Loader2`).
 
 ---
 
 ## 15. Important Business Rules
 
-### Health Calculations
+### 15.1. Formula Perhitungan Kesehatan (`lib/kesehatan.ts`)
 
-| Rule | Formula | Source |
+| Parameter | Rumus / Logika Perhitungan | Acuan Ilmiah |
 |---|---|---|
-| BMI | `weight / (height_m)²` | `lib/kesehatan.ts` |
-| BMI < 18.5 | Status: Kurus | Confirmed |
-| 18.5 ≤ BMI < 25 | Status: Normal | Confirmed |
-| 25 ≤ BMI < 30 | Status: Berlebih | Confirmed |
-| BMI ≥ 30 | Status: Obesitas | Confirmed |
-| BMR (Male) | `10×W + 6.25×H - 5×Age + 5` | Mifflin-St Jeor |
-| BMR (Female) | `10×W + 6.25×H - 5×Age - 161` | Mifflin-St Jeor |
-| TDEE | `BMR × Activity Factor` | Factors: 1.2, 1.375, 1.55, 1.725 |
-| Ideal Weight | `[18.5×H_m², 24.9×H_m²]` | Standard BMI range |
-| Protein | `Weight × 1.4 g/day` | Confirmed |
-| Fat | `(TDEE × 0.30) / 9 g/day` | Confirmed |
-| Carbs | `(TDEE - Protein×4 - Fat×9) / 4 g/day` | Confirmed |
+| **Indeks Massa Tubuh (BMI)** | $\text{BMI} = \frac{\text{Berat Badan (kg)}}{(\text{Tinggi Badan (m)})^2}$ | Standar WHO |
+| **Kategori Status BMI** | • Kurus: $\text{BMI} < 18.5$<br>• Normal: $18.5 \le \text{BMI} < 25.0$<br>• Berlebih: $25.0 \le \text{BMI} < 30.0$<br>• Obesitas: $\text{BMI} \ge 30.0$ | Perbandingan floating-point presisi $\epsilon = 10^{-6}$ untuk batas nilai aman. |
+| **BMR Pria** | $\text{BMR} = 10 \times \text{BB} + 6.25 \times \text{TB} - 5 \times \text{Usia} + 5$ | Persamaan Mifflin-St Jeor |
+| **BMR Wanita** | $\text{BMR} = 10 \times \text{BB} + 6.25 \times \text{TB} - 5 \times \text{Usia} - 161$ | Persamaan Mifflin-St Jeor |
+| **TDEE (Kalori Harian)** | $\text{TDEE} = \text{BMR} \times \text{Faktor Aktivitas}$ | • Sedentary/Rebahan: 1.2<br>• Light/Ringan: 1.375<br>• Moderate/Sedang: 1.55<br>• Active/Berat: 1.725 |
+| **Rentang Berat Ideal** | $[18.5 \times \text{TB(m)}^2, 24.9 \times \text{TB(m)}^2]$ | Batas aman BMI normal |
+| **Kebutuhan Protein** | $\text{Protein} = \text{BB (kg)} \times 1.4\text{ gram/hari}$ | Angka kecukupan aktif |
+| **Kebutuhan Lemak** | $\text{Lemak} = \frac{\text{TDEE} \times 0.30}{9}\text{ gram/hari}$ | 30% dari total kalori harian |
+| **Kebutuhan Karbohidrat** | $\text{Karbohidrat} = \frac{\text{TDEE} - (\text{Protein} \times 4) - (\text{Lemak} \times 9)}{4}\text{ gram/hari}$ | Dihitung dari sisa kalori |
 
-### Content Rules
+### 15.2. Pemetaan Kategori Latihan Berdasarkan Status BMI
 
-- **Slugs**: Auto-generated from title/name + numeric timestamp for uniqueness.
-- **Read counter**: Incremented atomically on each detail page GET request.
-- **Featured articles**: Boolean flag, filterable on admin and highlighted on client.
-- **Menu categorization**: Each recipe tagged with exactly one `TargetStatus` value.
+| Status BMI | Kategori Fasilitas | Rekomendasi Jenis Olahraga |
+|---|---|---|
+| **Kurus** | `gym` | Latihan beban terarah (*hypertrophy / strength training*) untuk meningkatkan massa otot. |
+| **Normal** | `lapangan` | Olahraga fungsional dan permainan komunitas (futsal, badminton, lari, basket). |
+| **Berlebih** | `low_impact` | Kardio berbenturan rendah untuk membakar kalori tanpa membebani persendian kaki. |
+| **Obesitas** | `low_impact` | Berenang, jalan santai, senam air untuk menjaga integritas sendi lutut. |
 
-### Location-to-BMI Mapping
-
-| BMI Status | Recommended Exercise Category |
-|---|---|
-| Kurus | `gym` (strength training) |
-| Normal | `lapangan` (field/community sports) |
-| Berlebih | `low_impact` (low-impact cardio) |
-| Obesitas | `low_impact` (aquatic/walking) |
-
-### Account Rules
-
-- **Email uniqueness** enforced at DB level.
-- **Username uniqueness** checked at API level before update.
-- **Password requirements**: Min 8 characters, must contain letters and numbers.
-- **Google accounts**: Can exist without password; password change blocked for OAuth-only accounts.
-- **Cascade delete**: Removing an account removes all associated perhitungan, locations, and scan history.
-
-### FitBot Guardrails
-
-- Only responds to health, fitness, and nutrition topics.
-- Refuses code generation requests.
-- Zero-token shortcuts for 3 predefined queries bypass LLM entirely.
-- System prompt injected with user's physical data for personalized responses.
+### 15.3. Aturan Validasi Barcode Makanan
+- Barcode wajib berupa untaian angka numerik dengan panjang antara 3 hingga 64 digit (`/^\d{3,64}$/`).
+- Nilai gizi (Kalori, Protein, Lemak, Karbohidrat, Gula) dinormalisasi per 100 gram produk.
 
 ---
 
 ## 16. Dependencies and External Services
 
-### Runtime Dependencies
+### 16.1. Dependensi Produksi Utama (`package.json`)
 
-| Package | Version | Purpose |
+| Paket | Versi | Peran dalam Aplikasi |
 |---|---|---|
-| `next` | 16.1.6 | Framework |
-| `react` / `react-dom` | 19.2.3 | UI library |
-| `@prisma/client` | ^7.4.2 | Database ORM |
-| `pg` | ^8.19.0 | PostgreSQL driver |
-| `jose` | ^6.2.1 | JWT signing/verification |
-| `bcryptjs` | ^3.0.3 | Password hashing |
-| `zod` | ^4.3.6 | Schema validation |
-| `cloudinary` | ^2.9.0 | Image upload/transform |
-| `@react-oauth/google` | ^0.13.4 | Google sign-in (web) |
-| `google-auth-library` | ^10.6.1 | Google token verification |
-| `leaflet` / `react-leaflet` | ^1.9.4 / ^5.0.0 | Interactive maps |
-| `@tiptap/*` | Various | Rich text editor |
-| `jspdf` / `jspdf-autotable` | ^4.2.1 | PDF generation |
-| `html2canvas` | - | HTML-to-canvas for PDF |
-| `framer-motion` / `gsap` | ^12.34.3 / - | Animations |
-| `sonner` | - | Toast notifications |
-| `react-markdown` | ^10.1.0 | Markdown rendering (chat) |
-| `next-themes` | - | Dark/light mode |
+| `next` | 16.1.6 | Kerangka kerja aplikasi React berbasis App Router |
+| `react` / `react-dom` | 19.2.3 | Pustaka antarmuka pengguna inti |
+| `@prisma/client` | ^7.4.2 | ORM database client |
+| `@prisma/adapter-pg` | ^7.4.2 | Adaptor koneksi PostgreSQL untuk Prisma 7 |
+| `pg` | ^8.19.0 | Klien driver PostgreSQL Node.js |
+| `ioredis` | ^6.0.0 | Klien performa tinggi untuk Redis caching |
+| `jose` | ^6.2.1 | Implementasi JWT standar Web Crypto API |
+| `bcryptjs` | ^3.0.3 | Pustaka hashing kata sandi akun |
+| `zod` | ^4.3.6 | Validasi skema tipe data dan formulir |
+| `cloudinary` | ^2.9.0 | SDK pengunggahan dan manipulasi gambar Cloudinary |
+| `@react-oauth/google` | ^0.13.4 | Komponen tombol integrasi Google Sign-In |
+| `google-auth-library` | ^10.6.1 | Verifikasi token ID Google OAuth sisi server |
+| `leaflet` / `react-leaflet` | ^1.9.4 / ^5.0.0 | Rendering peta digital interaktif |
+| `@tiptap/*` (9 paket) | ^3.22.3 | Editor teks kaya WYSIWYG untuk konten artikel |
+| `framer-motion` | ^12.34.3 | Pustaka animasi transisi antarmuka |
+| `sonner` | ^2.0.7 | Pustaka notifikasi toast |
+| `next-themes` | ^0.4.6 | Manajemen preferensi tema terang/gelap |
+| `lucide-react` | ^0.576.0 | Koleksi ikon antarmuka |
+| `jspdf` / `jspdf-autotable` | ^4.2.1 / ^5.0.8 | Pustaka pembuatan berkas laporan PDF |
+| `html2canvas` | ^1.4.1 | Pustaka konversi elemen HTML menjadi canvas |
 
-### Dev Dependencies
+### 16.2. Variabel Lingkungan (`.env` & `.env.example`)
 
-| Package | Purpose |
-|---|---|
-| `vitest` | Test runner |
-| `@faker-js/faker` | Test/seed data generation |
-| `tsx` | TypeScript script execution |
-| `prisma` | CLI for migrations/generation |
-| `tailwindcss` / `@tailwindcss/postcss` | CSS build |
-
-### External Services (Environment Variables Required)
-
-| Service | Required Env Vars |
-|---|---|
-| PostgreSQL | `DATABASE_URL` |
-| JWT | `JWT_SECRET` |
-| Cloudinary | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
-| Google OAuth | `GOOGLE_CLIENT_ID` (inferred) |
-| Groq Cloud | API key (inferred from chat route) |
+| Nama Variabel Lingkungan | Status Kebutuhan | Deskripsi & Contoh |
+|---|---|---|
+| `DATABASE_URL` | **Wajib** | URL koneksi PostgreSQL (contoh: `postgresql://user:pass@ep-host.neon.tech/fitlife`) |
+| `JWT_SECRET` | **Wajib** | Kunci rahasia acak untuk menandatangani token JWT |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | **Wajib untuk Google Auth** | Kunci Client ID Google OAuth Web |
+| `CLOUDINARY_CLOUD_NAME` | **Wajib untuk Media** | Nama cloud instance Cloudinary |
+| `CLOUDINARY_API_KEY` | **Wajib untuk Media** | API key publik Cloudinary |
+| `CLOUDINARY_API_SECRET` | **Wajib untuk Media** | API key rahasia Cloudinary |
+| `GROQ_API_KEY` | **Wajib untuk FitBot** | Kunci otentikasi API Groq Cloud |
+| `REDIS_URL` | Opsional (Sangat Dianjurkan) | URL koneksi Redis Upstash / Redis Server |
+| `FOOD_CACHE_TTL` | Opsional | Durasi cache produk makanan (default: 604800 detik / 7 hari) |
 
 ---
 
 ## 17. Platform / Environment Requirements
 
-- **Node.js**: Compatible with Next.js 16.x (Node 18+ recommended).
-- **PostgreSQL**: Required as primary database.
-- **Package Manager**: npm (inferred from `package-lock.json` / scripts).
-- **Build**: `next build` with `prisma generate` as `postinstall` hook.
-- **Allowed Image Domains**: `lh3.googleusercontent.com`, `images.unsplash.com`, `res.cloudinary.com`, `images.openfoodfacts.org`, `static.openfoodfacts.org`.
+- **Lingkungan Eksekusi**: Node.js 18.x atau 20.x ke atas.
+- **Basis Data Utama**: PostgreSQL 14+ (direkomendasikan serverless seperti Neon DB).
+- **In-Memory Cache**: Redis server 6+ atau Upstash Redis (aplikasi tetap berjalan dengan fallback peringatan log jika Redis tidak aktif).
+- **Konfigurasi Domain Gambar (`next.config.ts`)**:
+  - `res.cloudinary.com`
+  - `lh3.googleusercontent.com`
+  - `images.unsplash.com`
+  - `images.openfoodfacts.org`
+  - `static.openfoodfacts.org`
 
 ---
 
 ## 18. Current Limitations or Known Issues
 
-| # | Limitation | Status |
-|---|---|---|
-| 1 | **No Next.js middleware** — auth is checked per-route, not globally. Admin pages are not server-side protected at the routing level. | Confirmed |
-| 2 | **No RBAC middleware** — role checks happen inside each API handler individually. | Confirmed |
-| 3 | **No rate limiting** on API endpoints (except Groq retry on 429). | Confirmed |
-| 4 | **Client-side data fetching only** — no use of Next.js server components for data loading; potential waterfall requests. | Confirmed |
-| 5 | **No email verification** — accounts are active immediately after registration. | Confirmed |
-| 6 | **No password reset flow** — no forgot-password or email-based recovery. | Confirmed |
-| 7 | **Food scanning only via mobile** — no web-based barcode scanner; web page is history-only. | Confirmed |
-| 8 | **Graph build/head mismatch** — knowledge graph built on different commit than current HEAD. | Confirmed |
-| 9 | **High unresolved CALLS edges** in code graph (3712 of 4029) — indicates dynamic imports or framework magic. | Confirmed |
-| 10 | **No pagination metadata** on some GET endpoints. | Inferred |
-| 11 | **Admin auth on client side** — admin pages wrap in `LayoutAdmin` but server-side auth not enforced at layout level. | Confirmed |
+| # | Keterbatasan / Isu Dikenal | Tingkat Dampak | Rincian Temuan dari Kode Sumber |
+|---|---|---|---|
+| 1 | **Tidak Adanya Global Next.js Middleware** | Menengah | Belum terdapat file `middleware.ts` terpusat di root proyek. Validasi sesi dan hak akses admin ditegakkan secara independen di setiap Route Handler dan komponen layout. |
+| 2 | **Data Fetching Dominan di Sisi Klien** | Ringan–Menengah | Sebagian besar halaman menggunakan `"use client"` dengan pemanggilan `fetch()` dalam `useEffect`. Pendekatan ini belum memanfaatkan streaming data React Server Components secara penuh. |
+| 3 | **Belum Tersedia Layanan Email Transaksional** | Ringan | Akun langsung aktif setelah registrasi tanpa proses verifikasi email OTP/link aktivasi, dan belum tersedia alur *Lupa Kata Sandi* via email. |
+| 4 | **Siklus Hidup Peta Leaflet pada Fast Reload** | Ringan | Pustaka Leaflet memerlukan penanganan pembersihan wadah DOM yang teliti saat Turbopack melakukan fast-reload dinamis agar tidak terjadi kesalahan `_leaflet_pos is undefined`. |
+| 5 | **Fitur Scan Barcode Web Menggunakan Input Manual** | Ringan | Pemindaian kamera real-time barcode secara native difokuskan pada aplikasi mobile Flutter; halaman web menyediakan input angka barcode manual dan riwayat hasil scan. |
 
 ---
 
 ## 19. Important Technical Constraints
 
-1. **Prisma output path**: Generated client lives at `../generated/prisma` (relative to `prisma/` dir), imported as `@/generated/prisma`.
-2. **Floating-point precision**: Health calculations use `1e-6` epsilon comparisons for IEEE-754 boundary cases in BMI classification.
-3. **Image size limits**: Profile avatars max 2MB, menu images max 3MB.
-4. **Cloudinary transformations**: Avatars auto-cropped to 400×400 (face focus), menu images to 800×600 (fill).
-5. **JWT cookie**: HTTP-only, 7-day maxAge, path `/`.
-6. **Groq model**: Hardcoded to `qwen/qwen3.8-27b`, temperature 0.2, max 350 tokens.
-7. **Chat sliding window**: Only last 4 messages sent for context to minimize token usage.
-8. **Barcode validation**: Strict numeric, 3–64 digits.
-9. **Slug generation**: Based on title/name + numeric timestamp — not reversible.
-10. **Database**: PostgreSQL-specific; Prisma adapter-pg used directly (not default Prisma engine).
+1. **Prisma Output Generator**: Prisma client di-generate ke `@/generated/prisma`. Mengimpor langsung dari `@prisma/client` tanpa konfigurasi akan menghasilkan error model tidak ditemukan.
+2. **Presisi Komparasi Floating-Point**: Klasifikasi batas angka BMI menggunakan epsilon rounding `1e-6` guna mencegah anomali biner IEEE-754 pada angka desimal presisi (misal `18.499999999999996`).
+3. **Batas Ukuran Berkas Unggahan**:
+   - Foto avatar profil: Maksimal 2MB (jpg, png, webp).
+   - Gambar resep menu: Maksimal 3MB.
+   - Foto produk barcode: Maksimal 5MB.
+4. **Pembatasan Pemakaian Token LLM Groq**:
+   - Model dikunci pada `qwen/qwen3.8-27b`.
+   - Panjang sliding window riwayat chat dibatasi maksimal 4 pesan terakhir.
+   - Parameter `max_tokens` dibatasi ketat pada 350 token per jawaban.
+5. **Kunci Cache Barcode Standar**: Seluruh kunci cache Redis produk makanan berformat seragam `food:barcode:<barcode>` untuk mempermudah invalidasi silang antara modul user dan admin.
 
 ---
 
-## 20. Feature-to-Page/Component Mapping
+## 20. Feature-to-Page / Component Mapping
 
-| Feature | Client Page(s) | Admin Page(s) | API Route(s) | Core Logic |
+| Fitur Aplikasi | Halaman Client | Halaman Admin | Rute API | Berkas Inti / Utilitas |
 |---|---|---|---|---|
-| Health Calculator | `/kalkulator` | — | `/api/perhitungan` | `lib/kesehatan.ts` |
-| BMI History | `/kalkulator` (chart) | — | `/api/perhitungan` GET | `BMIRiwayatChart` |
-| Healthy Menus | `/menu`, `/menu/[slug]` | `/admin/menu/*` | `/api/menus/*`, `/api/upload/menu` | — |
-| Articles | `/artikel`, `/artikel/[slug]` | `/admin/artikel/*` | `/api/artikels/*` | `RichTextEditor` |
-| Sports Locations | `/lokasi`, `/kalkulator` (map) | `/admin/lokasi/*` | `/api/lokasi-olahraga/*` | `LokasiPickerMap`, `LokasiMap` |
-| Food Scanner | `/scan-makanan` | — | `/api/scan-makanan/*` | Open Food Facts API |
-| AI Chatbot | Floating `ChatButton` | — | `/api/chat` | Groq API |
-| Auth | `/login`, `/register` | — | `/api/auth/*` | `lib/auth.ts` |
-| Profile | `/profile` | `/admin/profile` | `/api/profile/*` | `NavProfile` |
-| User Mgmt | — | `/admin/pengguna` | `/api/accounts/*` | — |
-| Dashboard | — | `/admin/dashboard` | `/api/admin/dashboard` | — |
-| Theme | All pages | All pages | — | `ThemeProvider` |
+| **Kalkulator BMI & Kalori** | `/kalkulator` | — | `/api/perhitungan` | `lib/kesehatan.ts`, `LokasiMap.tsx` |
+| **Grafik Riwayat BMI** | `/kalkulator` | — | `/api/perhitungan` (GET) | `components/BMIRiwayatChart.tsx` |
+| **Katalog Resep Menu** | `/menu`, `/menu/[slug]` | `/admin/menu/*` | `/api/menus/*`, `/api/upload/menu` | `prisma/models/menu.prisma` |
+| **Artikel Edukasi Kesehatan** | `/artikel`, `/artikel/[slug]` | `/admin/artikel/*` | `/api/artikels/*` | `RichTextEditor.tsx`, `artikel.prisma` |
+| **Peta Fasilitas Olahraga** | `/lokasi` | `/admin/lokasi/*` | `/api/lokasi-olahraga/*` | `LokasiMap.tsx`, `LokasiPickerMap.tsx` |
+| **Pencarian Barcode Makanan** | `/scan-makanan` | — | `/api/scan-makanan/lookup` | `lib/redis.ts`, `lib/openfoodfacts.ts` |
+| **Riwayat Scan Makanan** | `/scan-makanan` | — | `/api/scan-makanan/*` | `prisma/models/scanMakanan.prisma` |
+| **Master Scan Makanan** | — | `/admin/master-makanan` | `/api/admin/master-makanan/*` | `prisma/models/masterMakanan.prisma` |
+| **Asisten FitBot AI** | Floating `ChatButton` | — | `/api/chat` | `app/api/chat/route.ts` |
+| **Autentikasi & Akun** | `/login`, `/register` | `/admin/pengguna` | `/api/auth/*`, `/api/accounts/*` | `lib/auth.ts`, `prisma/models/account.prisma` |
+| **Profil Pengguna** | `/profile` | `/admin/profile` | `/api/profile/*` | `NavProfile.tsx`, `app/api/profile/*` |
+| **Dasbor Analitik Admin** | — | `/admin/dashboard` | `/api/admin/dashboard` | `app/api/admin/dashboard/route.ts` |
+| **Sistem Tema UI** | Seluruh Halaman | Seluruh Halaman | — | `app/globals.css`, `ThemeProvider.tsx` |
 
 ---
 
 ## 21. Acceptance Criteria for Existing Major Features
 
-### 21.1 Health Calculator
+### 21.1. Kalkulator Kesehatan (`/kalkulator`)
+- [x] Mendukung input gender, tinggi (cm), berat (kg), usia (tahun), dan 4 tingkat aktivitas.
+- [x] Nilai BMI dihitung dengan rumus $\text{BB} / \text{TB(m)}^2$ dan dikelompokkan ke dalam 4 kategori status WHO.
+- [x] Nilai BMR dihitung dengan persamaan Mifflin-St Jeor dengan pembedaan gender pria dan wanita.
+- [x] Nilai TDEE dihitung dengan mengalikan BMR terhadap faktor aktivitas (1.2, 1.375, 1.55, 1.725).
+- [x] Rentang berat ideal dihitung berdasarkan batas normal BMI $[18.5 \times \text{TB}^2, 24.9 \times \text{TB}^2]$.
+- [x] Rekomendasi makronutrien (protein, lemak, karbohidrat) ditampilkan secara presisi.
+- [x] Hasil kalkulasi ditampilkan secara instan di sisi klien sebelum formulir dikirim.
+- [x] Pengguna yang telah masuk dapat menyimpan hasil kalkulasi ke database dan melihat grafik riwayat 10 data terakhir.
+- [x] Menampilkan rekomendasi menu dan fasilitas olahraga terdekat sesuai status BMI yang dihasilkan.
 
-- [x] User can input gender, height (cm), weight (kg), age, and activity level.
-- [x] BMI is calculated as `weight / (height_m)²` and categorized into 4 statuses.
-- [x] BMR calculated using Mifflin-St Jeor formula differentiated by gender.
-- [x] TDEE calculated as BMR × activity factor (4 levels).
-- [x] Ideal weight range displayed as `[18.5×h², 24.9×h²]`.
-- [x] Macronutrient recommendations (protein, fat, carbs) derived from TDEE.
-- [x] Results displayed instantly on client before form submission (preview mode).
-- [x] Authenticated users' calculations persisted to database.
-- [x] History of last 10 calculations retrievable and displayed in chart.
-- [x] Recommended menus shown filtered by BMI status.
-- [x] Nearby sports venues shown on Leaflet map filtered by BMI status.
+### 21.2. Master Scan Makanan Admin (`/admin/master-makanan`)
+- [x] Menampilkan kartu ringkasan statistik (Total Produk, Terverifikasi, Komunitas, Database OpenFoodFacts, Total Frekuensi Scan).
+- [x] Menyediakan toolbar filter berdasarkan sumber produk (*Semua*, *Terverifikasi*, *Komunitas*, *Open Food Facts*).
+- [x] Menyediakan kolom pencarian teks dengan debounce 400ms untuk barcode, nama makanan, dan brand.
+- [x] Mendukung aksi *Verifikasi Cepat* untuk mengubah status produk komunitas menjadi `verified` sekali klik.
+- [x] Menyediakan modal penyuntingan informasi produk dan penyesuaian gramatur nutrisi (Kalori, Protein, Lemak, Karbohidrat, Gula).
+- [x] Mendukung penambahan produk master baru dengan pengunggahan foto ke Cloudinary.
+- [x] Mendukung penghapusan produk dengan pembersihan data database dan pemusnahan kunci cache Redis terkait.
 
-### 21.2 Recipe Directory
+### 21.3. 3-Tier Barcode Scan Makanan (`/api/scan-makanan/lookup`)
+- [x] Memvalidasi parameter barcode berupa 3 sampai 64 digit angka.
+- [x] Tier 1: Mengembalikan data seketika dengan header `X-Cache: HIT` jika data ditemukan di Redis.
+- [x] Tier 2: Mengambil dari tabel `master_makanan` pada saat cache miss, memperbarui Redis, dan menambah counter `scan_count`.
+- [x] Tier 3: Menghubungi Open Food Facts API jika data tidak ada di DB lokal, lalu melakukan auto-upsert ke database dan Redis.
+- [x] Pengguna terdaftar dapat menyimpan produk hasil pencarian ke riwayat pemindaian akun pribadi melalui `/api/scan-makanan/save`.
 
-- [x] Recipes filterable by `TargetStatus` (Kurus/Normal/Berlebih/Obesitas).
-- [x] Debounced search (400ms) across recipe names and descriptions.
-- [x] Pagination at 9 items per page.
-- [x] Detail page shows full info: calories, cooking time, target, description.
-- [x] View counter incremented on each detail page visit.
-- [x] Related recipes shown based on same target status.
-- [x] Admin can create, edit, and delete recipes with Zod validation.
-- [x] Recipe images uploaded to Cloudinary (max 3MB, auto-cropped 800×600).
+### 21.4. Asisten Konsultasi FitBot AI (`/api/chat`)
+- [x] Membatasi akses percakapan hanya untuk pengguna yang telah terautentikasi.
+- [x] Menangani 3 shortcut lokal ("cek tinggi & berat badan", "status bmi terakhir", "hitung kalori harian") dengan 0 token LLM.
+- [x] Menginjeksi ringkasan profil fisik pengguna terkini ke dalam system prompt ringkas (~80 token).
+- [x] Membatasi riwayat percakapan yang dikirim ke LLM maksimal 4 pesan terakhir.
+- [x] Menerapkan mekanisme retry exponential backoff maksimal 3 kali (2s, 4s, 8s) saat menghadapi error 429 atau 503 dari Groq.
+- [x] Membatasi topik obrolan secara ketat hanya pada ranah kesehatan, olahraga, dan nutrisi makanan.
 
-### 21.3 Article CMS
-
-- [x] Articles have title, category, author, rich HTML body, cover image, featured flag.
-- [x] Tiptap WYSIWYG editor with formatting toolbar (bold, italic, headings, links, images, code, colors).
-- [x] Category filter derived dynamically from existing articles.
-- [x] Featured articles highlighted in hero sections.
-- [x] View counter on detail pages.
-- [x] Admin full CRUD with validation (`ArtikelSchema`).
-
-### 21.4 Authentication
-
-- [x] Email/password registration with Zod validation (name ≥2 chars, valid email, password ≥8 chars with letters+numbers).
-- [x] Email/password login with bcrypt verification.
-- [x] Google OAuth login/registration supporting both web (access_token) and mobile (id_token).
-- [x] JWT token issued with 7-day expiry, stored in HTTP-only cookie.
-- [x] Mobile clients authenticate via `Authorization: Bearer` header.
-- [x] Logout clears authentication cookies.
-
-### 21.5 AI Chatbot (FitBot)
-
-- [x] Only accessible to authenticated users.
-- [x] Injects user's physical profile (height, weight, latest BMI) as context.
-- [x] Zero-token shortcuts for 3 predefined queries.
-- [x] Groq API call with lean system prompt (~80 tokens).
-- [x] Sliding window of last 4 messages for conversation context.
-- [x] Exponential backoff retry on 429/503 (3 attempts).
-- [x] Health-only topic guardrail; refuses code generation.
-
-### 21.6 Sports Facility Locator
-
-- [x] Interactive Leaflet map with custom markers.
-- [x] Map view / list view toggle.
-- [x] Search by name and address.
-- [x] Category filter (gym, lapangan, low_impact).
-- [x] Browser geolocation with Haversine distance calculation.
-- [x] Google Maps routing link per venue.
-- [x] Admin CRUD with interactive map picker and reverse geocoding.
-
-### 21.7 Food Barcode Scanner
-
-- [x] Barcode lookup via Open Food Facts API (3–64 digit numeric validation).
-- [x] Returns normalized nutrition per 100g (calories, protein, fat, carbs, sugar).
-- [x] Authenticated users can save scan results to history.
-- [x] Web page displays scan history with delete capability.
-- [x] Promotional onboarding for guest users.
+### 21.5. Otentikasi & Akun Pengguna
+- [x] Pendaftaran akun dengan validasi Zod (nama min 2 karakter, email valid, password min 8 karakter berisi kombinasi huruf & angka).
+- [x] Masuk menggunakan kredensial email & password dengan verifikasi hash `bcryptjs`.
+- [x] Masuk menggunakan Google OAuth baik dari Web (`access_token`) maupun Mobile (`id_token`).
+- [x] Menerbitkan token JWT dengan masa aktif 7 hari yang disimpan dalam cookie HTTP-only aman.
+- [x] Mendukung pembacaan token autentikasi dari header `Authorization: Bearer <token>` untuk klien mobile.
+- [x] Pembaruan profil fisik (tinggi, berat badan, tanggal lahir) dan unggah avatar ke Cloudinary.
+- [x] Penghapusan akun pengguna memicu cascade deletion pada riwayat perhitungan, lokasi, dan riwayat scan.
 
 ---
 
-> **Document Notes**
->
-> - All features marked as "Confirmed" were verified directly from source code.
-> - Features marked as "Inferred" are based on dependency presence or indirect evidence.
-> - No source code was modified during this analysis.
-> - The Prisma schema shown is reconstructed from generated model files and migration SQL; the actual `schema.prisma` file contains only the generator and datasource configuration.
+> **Catatan Verifikasi Dokumen**:
+> - Dokumen PRD ini diperbarui berdasarkan inspeksi komprehensif pada branch aktif `calc-bmi` commit `bffabca`.
+> - Seluruh 74 pengujian unit dan integrasi (`vitest --run`) terkonfirmasi lulus (100% pass).
+> - Seluruh pemetaan rute, komponen antarmuka, model Prisma multi-file, dan alur bisnis telah diverifikasi langsung terhadap implementasi kode aktual.
