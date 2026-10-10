@@ -91,7 +91,7 @@ export default function NavProfile() {
     return (
       <Link
         href="/login"
-        className="bg-primary hover:bg-primary-hover text-background-dark px-6 py-2.5 rounded-full font-bold shadow-[0_0_15px_rgba(0,255,127,0.3)] transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2 w-full md:w-auto"
+        className="bg-primary hover:bg-primary-hover text-primary-foreground px-6 py-2.5 rounded-full font-bold shadow-xs transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2 w-full md:w-auto"
       >
         <LogIn size={18} />
         <span>Login</span>
@@ -151,7 +151,7 @@ export default function NavProfile() {
         </button>
 
         {open && (
-          <div className="absolute right-0 mt-3 w-58 rounded-2xl border border-card-border bg-card-dark shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,255,127,0.05)] z-50 overflow-hidden">
+          <div className="absolute right-0 mt-3 w-58 rounded-2xl border border-card-border bg-card-dark shadow-xl z-50 overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
 
             <div className="px-4 py-3.5 border-b border-card-border bg-background-base/40">
