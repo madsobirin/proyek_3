@@ -102,7 +102,7 @@ Tabel berikut merangkum seluruh fitur aplikasi dengan penandaan status kepastian
 | 15 | **Dual-Method Authentication (Email & Google)** | [Confirmed from code] | `/login`, `/register`, `/api/auth/*`, `@react-oauth/google` |
 | 16 | **Dual-Channel Session Handling (Cookie & Bearer)** | [Confirmed from code] | `lib/auth.ts`, cookie HTTP-only (web) + Bearer header (mobile) |
 | 17 | **Manajemen Profil Pengguna** | [Confirmed from code] | `/profile`, update fisik TB/BB, foto Cloudinary, ganti password |
-| 18 | **Sistem Tema Dark & Light Mode (Health Theme)** | [Confirmed from code] | `app/globals.css`, Obsidian Slate `#090d0b`, Leaf Emerald `#10b981` |
+| 18 | **Sistem Tema Dark & Light Mode (Health Theme)** | [Confirmed from code] | `app/globals.css`, Botanical Forest Dark `#0b1a14`, Leaf Emerald `#10b981` |
 | 19 | **Database Seeding & Test Data Factories** | [Confirmed from code] | `prisma/seed.ts`, `prisma/factories/*` (menu, artikel, lokasi) |
 | 20 | **Suite Pengujian Unit & Integrasi (74 Tests)** | [Confirmed from code] | Vitest 4.1.7 di direktori `__tests__` |
 | 21 | **Ekspor Hasil Kesehatan ke Dokumen PDF** | [Inferred] | Dependensi `jspdf`, `jspdf-autotable`, `html2canvas` terpasang di `package.json` |
@@ -373,11 +373,11 @@ Sistem antarmuka FitLife menggunakan **Tailwind CSS v4** dengan palet warna klin
 |---|---|---|---|---|
 | **Primary Brand** | `--color-primary` / `--primary` | `#10b981` | `#10b981` | Vital Emerald (Daun Alami), aksen utama dan tombol aksi. |
 | **Primary Hover** | `--color-primary-hover` | `#059669` | `#059669` | Emerald Gelap untuk status hover interaktif. |
-| **Latar Belakang** | `--background` | `#f8fafc` (Slate 50) | `#090d0b` (Deep Obsidian Slate) | Latar dasar non-agresif tanpa saturasi berlebih. |
-| **Kartu / Surface** | `--card` | `#ffffff` (Putih Bersih) | `#101613` (Forest Card Obsidian) | Latar kontainer komponen dan kartu data. |
-| **Garis / Border** | `--border` / `--color-card-border` | `#e2e8f0` (Slate 200) | `#1a2720` (Forest Line Border) | Garis tepi halus dengan kontras seimbang. |
-| **Teks Utama** | `--foreground` / `--color-text-light` | `#0f172a` (Slate 900) | `#f1f5f9` (Slate 100) | Keterbacaan tinggi untuk judul dan angka penting. |
-| **Teks Sekunder** | `--muted-foreground` / `--color-text-muted` | `#64748b` (Slate 500) | `#94a3b8` (Slate 400) | Label keterangan dan teks pelengkap. |
+| **Latar Belakang** | `--background` | `#f8fafc` (Slate 50) | `#0b1a14` (Botanical Dark Green) | Latar dasar non-agresif dengan nuansa hijau botani alami yang sejuk. |
+| **Kartu / Surface** | `--card` | `#ffffff` (Putih Bersih) | `#11261d` (Forest Pine Card) | Latar kontainer komponen dan kartu data. |
+| **Garis / Border** | `--border` / `--color-card-border` | `#e2e8f0` (Slate 200) | `#1c3e30` (Herbal Green Border) | Garis tepi halus dengan kontras seimbang. |
+| **Teks Utama** | `--foreground` / `--color-text-light` | `#0f172a` (Slate 900) | `#f2f9f5` (Fresh Mint White) | Keterbacaan tinggi untuk judul dan angka penting. |
+| **Teks Sekunder** | `--muted-foreground` / `--color-text-muted` | `#64748b` (Slate 500) | `#8fa89b` (Soft Sage) | Label keterangan dan teks pelengkap. |
 
 ### 9.2. Tipografi & Radius
 - **Font Utama**: `Inter` (`--font-sans`, sans-serif) yang dimuat via Google Fonts.
