@@ -51,6 +51,9 @@ type BMIResult = {
   protein: number;
   lemak: number;
   karbohidrat: number;
+  gender?: string;
+  usia?: number;
+  aktivitas?: string;
   tinggi_badan?: number;
   berat_badan?: number;
 };
