@@ -6,8 +6,8 @@
 
 @theme {
   /* Primary brand colors */
-  --color-primary: #00cc66;
-  --color-primary-hover: #00b359;
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
 
   /* Fonts */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -48,83 +48,84 @@
   --radius: 0.625rem;
 
   /* Semantic surface colors */
-  --background: #f0fdf4;
-  --foreground: #052e16;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #052e16;
+  --card-foreground: #0f172a;
 
   /* Primary */
-  --primary: #00cc66;
+  --primary: #10b981;
   --primary-foreground: #ffffff;
 
   /* Secondary */
-  --secondary: #e2f5ea;
-  --secondary-foreground: #052e16;
+  --secondary: #ecfdf5;
+  --secondary-foreground: #065f46;
 
   /* Muted */
-  --muted: #e8f5ec;
-  --muted-foreground: #4a7c5c;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
 
   /* Accent */
-  --accent: #dcfce7;
-  --accent-foreground: #052e16;
+  --accent: #d1fae5;
+  --accent-foreground: #065f46;
 
   /* Destructive */
   --destructive: oklch(0.577 0.245 27.325);
 
   /* Borders & inputs */
-  --border: #c6e7d0;
-  --input: #d1edd9;
-  --ring: #00cc66;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #10b981;
 
   /* Custom FitLife tokens – light */
-  --color-background-base: #f0fdf4;
-  --color-background-dark: #e2f5ea;
+  --color-background-base: #f8fafc;
+  --color-background-dark: #f1f5f9;
   --color-card-dark: #ffffff;
-  --color-card-border: #c6e7d0;
-  --color-text-light: #052e16;
-  --color-text-muted: #4a7c5c;
+  --color-card-border: #e2e8f0;
+  --color-text-light: #0f172a;
+  --color-text-muted: #64748b;
 }
 
-/* ===== DARK MODE ===== */
+/* ===== DARK MODE (HEALTH & WELLNESS) ===== */
 .dark {
-  --background: #031f14;
-  --foreground: #f0fff4;
-  --card: #062c1e;
-  --card-foreground: #f0fff4;
+  /* Slate-Obsidian base with very subtle calming pine-mineral undertone */
+  --background: #090d0b;
+  --foreground: #f1f5f9;
+  --card: #101613;
+  --card-foreground: #f1f5f9;
 
   /* Primary */
-  --primary: #00cc66;
-  --primary-foreground: #031f14;
+  --primary: #10b981;
+  --primary-foreground: #042014;
 
   /* Secondary */
-  --secondary: #0d422e;
-  --secondary-foreground: #f0fff4;
+  --secondary: #141f19;
+  --secondary-foreground: #a7f3d0;
 
   /* Muted */
-  --muted: #0d422e;
-  --muted-foreground: #8aafa1;
+  --muted: #151e19;
+  --muted-foreground: #84968c;
 
   /* Accent */
-  --accent: #0d422e;
-  --accent-foreground: #f0fff4;
+  --accent: #17261f;
+  --accent-foreground: #6ee7b7;
 
   /* Destructive */
   --destructive: oklch(0.704 0.191 22.216);
 
   /* Borders & inputs */
-  --border: #0d422e;
-  --border-2: #2b61d4;
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #00cc66;
+  --border: #1a2720;
+  --border-2: #23372c;
+  --input: #1a2720;
+  --ring: #10b981;
 
   /* Custom FitLife tokens – dark */
-  --color-background-base: #031f14;
-  --color-background-dark: #01120b;
-  --color-card-dark: #062c1e;
-  --color-card-border: #0d422e;
-  --color-text-light: #f0fff4;
-  --color-text-muted: #8aafa1;
+  --color-background-base: #090d0b;
+  --color-background-dark: #060907;
+  --color-card-dark: #101613;
+  --color-card-border: #1a2720;
+  --color-text-light: #f1f5f9;
+  --color-text-muted: #84968c;
 }
 
 @layer base {

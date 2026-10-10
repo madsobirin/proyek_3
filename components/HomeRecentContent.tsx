@@ -72,7 +72,7 @@ const MiniPagination = ({
             onClick={() => setPage(p)}
             className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
               page === p
-                ? "bg-primary text-background-dark shadow-[0_0_8px_rgba(0,255,127,0.3)]"
+                ? "bg-primary text-primary-foreground font-black"
                 : "bg-background-base border border-card-border text-text-muted hover:text-primary hover:border-primary/40"
             }`}
           >

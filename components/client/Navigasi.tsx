@@ -77,7 +77,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="p-2.5 rounded-full border border-card-border hover:border-primary text-text-muted hover:text-primary transition-all duration-300 hover:shadow-[0_0_12px_rgba(0,255,127,0.2)]"
+              className="p-2.5 rounded-full border border-card-border hover:border-primary text-text-muted hover:text-primary transition-all duration-300 hover:bg-secondary/40"
               aria-label="Toggle theme"
             >
               {mounted && theme === "dark" ? (

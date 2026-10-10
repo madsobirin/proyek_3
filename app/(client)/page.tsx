@@ -1,195 +1,399 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   Scale,
   Utensils,
-  BookOpen,
-  ChevronRight,
+  ScanBarcode,
+  MapPin,
   ArrowRight,
+  ShieldCheck,
+  Flame,
+  Activity,
+  HeartPulse,
   Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 import HomeRecentContent from "@/components/HomeRecentContent";
 
 export default function Home() {
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative bg-background-base pt-12 pb-20 lg:pt-24 lg:pb-32 overflow-hidden">
-        {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-linear-to-br from-background-dark via-background-base to-background-dark opacity-80 pointer-events-none"></div>
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/5 filter blur-[120px] rounded-full pointer-events-none"></div>
+      {/* ── 1. Hero Section (Health & Wellness Theme) ── */}
+      <section className="relative bg-background-base pt-10 pb-16 lg:pt-20 lg:pb-28 overflow-hidden border-b border-card-border/60">
+        {/* Subtle organic ambient glow (natural emerald leaf, zero harsh radioactive glare) */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-10 w-80 h-80 bg-emerald-600/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="w-full lg:w-1/2 text-left">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-card-dark border border-card-border text-primary text-sm font-bold tracking-wide uppercase mb-6">
-                <Sparkles size={14} />
-                Hidup lebih sehat dan bahagia
-              </span>
-              <h1 className="text-4xl lg:text-6xl font-extrabold leading-tight mb-6 text-text-light">
-                Selamat Datang di{" "}
-                <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-green-300">
-                  Fitlife.id
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            {/* Left Column: Value Proposition */}
+            <div className="w-full lg:w-7/12 text-left">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary/80 border border-card-border text-emerald-600 dark:text-emerald-400 text-xs font-semibold tracking-wide mb-6">
+                <HeartPulse size={14} className="text-primary" />
+                <span>Panduan Gizi & Gaya Hidup Berkelanjutan</span>
+              </div>
+
+              {/* Title */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-text-light leading-[1.15] mb-6">
+                Kendalikan Pola Makan,{" "}
+                <span className="text-primary font-black">
+                  Capai Berat Badan Ideal.
                 </span>
               </h1>
-              <p className="text-lg text-text-muted mb-8 leading-relaxed max-w-xl">
-                Platform manajemen diet dan pola makan digital untuk hidup yang
-                lebih sehat dengan menu lezat, artikel inspiratif, dan
-                kalkulator BMI.
+
+              {/* Subtitle */}
+              <p className="text-base sm:text-lg text-text-muted mb-8 leading-relaxed max-w-xl">
+                FitLife.id memadukan kalkulator komposisi tubuh ilmiah, katalog
+                resep bernutrisi dengan estimasi biaya, dan pemindai barcode gizi
+                untuk menemani setiap langkah sehat Anda.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-start">
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3.5 justify-start mb-10">
                 <Link
                   href="/kalkulator"
-                  className="bg-primary text-slate-800 hover:bg-primary-hover px-8 py-3.5 rounded-full font-bold shadow-[0_0_20px_rgba(0,255,127,0.4)] transition transform hover:-translate-y-1 text-center flex items-center justify-center gap-2"
+                  className="bg-primary hover:bg-primary-hover text-primary-foreground px-7 py-3.5 rounded-xl font-bold transition shadow-sm hover:shadow-emerald-900/20 text-center flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
-                  Mulai Sekarang
-                  <ArrowRight size={18} />
+                  <Scale size={18} />
+                  <span>Hitung BMI & Kalori</span>
+                  <ArrowRight size={16} />
                 </Link>
                 <Link
-                  href="/"
-                  className="bg-transparent border border-card-border hover:border-primary text-text-light hover:text-primary px-8 py-3.5 rounded-full font-bold transition text-center"
+                  href="/menu"
+                  className="bg-card-dark hover:bg-secondary/60 border border-card-border text-text-light hover:text-primary px-7 py-3.5 rounded-xl font-semibold transition text-center flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
-                  Pelajari Lebih Lanjut
+                  <Utensils size={18} className="text-primary" />
+                  <span>Katalog Menu Sehat</span>
                 </Link>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-card-border/80 max-w-lg">
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-text-light">
+                    Mifflin-St
+                  </p>
+                  <p className="text-xs text-text-muted mt-0.5">Formula Medis BMR</p>
+                </div>
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-text-light">
+                    500+
+                  </p>
+                  <p className="text-xs text-text-muted mt-0.5">Menu Teruji Gizi</p>
+                </div>
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-text-light">
+                    100%
+                  </p>
+                  <p className="text-xs text-text-muted mt-0.5">Gratis & Terbuka</p>
+                </div>
               </div>
             </div>
 
-            <div className="w-full lg:w-1/2 relative group">
-              <div className="absolute inset-0 bg-primary/20 rounded-3xl transform rotate-3 scale-95 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl"></div>
-              <div className="relative rounded-3xl overflow-hidden border border-card-border shadow-2xl">
-                <Image
-                  alt="Healthy Lifestyle"
-                  className="object-cover w-full h-100 lg:h-125 transform transition duration-500 group-hover:scale-105"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ4ZkSFClO1fXtFbM0XmO9HaCa_r9xNW8tboOEpzU7LBjEFr5MPX4c86KmN2zBDe6d_YoFLQVSQ8A05NFXJEdmxFjW4rakGfhZleToMRiI8UAtyHgiXcg4cLOpsjuifCjLKlfYK-f4nZ5SdfmAy-FXZ0pOfr1n2CUBYI3h5myPjfEaNdOSnDRu-HUcTPQX59IVEidQcadhat-aKa25U7WoftnrqckvkVyf84ERzpSltf24cU-EJFf78t3LWPE77S3ylwfSmnh3JNY"
-                  width={800}
-                  height={600}
-                  priority
-                />
+            {/* Right Column: Authentic Health Snapshot Card (Preview Dashboard) */}
+            <div className="w-full lg:w-5/12">
+              <div className="bg-card-dark rounded-3xl p-6 sm:p-7 border border-card-border shadow-xl relative overflow-hidden backdrop-blur-xs">
+                {/* Header Card */}
+                <div className="flex items-center justify-between pb-5 border-b border-card-border/80">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                      <Activity size={20} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-text-light">
+                        Ringkasan Gizi Harian
+                      </h4>
+                      <p className="text-[11px] text-text-muted">
+                        Simulasi target pola hidup sehat
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    <ShieldCheck size={12} />
+                    Normal (BMI 21.8)
+                  </span>
+                </div>
+
+                {/* Calorie Goal Progress */}
+                <div className="py-5">
+                  <div className="flex justify-between items-baseline mb-2">
+                    <span className="text-xs font-medium text-text-muted flex items-center gap-1.5">
+                      <Flame size={14} className="text-amber-500" />
+                      Target Kalori Harian
+                    </span>
+                    <span className="text-sm font-bold text-text-light">
+                      1.380 / <span className="text-text-muted text-xs">1.950 kkal</span>
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 bg-background-base rounded-full overflow-hidden border border-card-border/60">
+                    <div
+                      className="h-full bg-linear-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+                      style={{ width: "70%" }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-text-muted mt-1.5 flex justify-between">
+                    <span>Sisa kebutuhan: 570 kkal</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">70% Tercapai</span>
+                  </p>
+                </div>
+
+                {/* Macronutrient Pills */}
+                <div className="grid grid-cols-3 gap-2.5 py-4 border-t border-card-border/60">
+                  <div className="bg-background-base p-3 rounded-xl border border-card-border/70 text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                      Protein
+                    </p>
+                    <p className="text-sm font-black text-text-light mt-0.5">85g</p>
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      Target 95g
+                    </p>
+                  </div>
+                  <div className="bg-background-base p-3 rounded-xl border border-card-border/70 text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                      Karbo
+                    </p>
+                    <p className="text-sm font-black text-text-light mt-0.5">180g</p>
+                    <p className="text-[10px] text-teal-600 dark:text-teal-400 mt-0.5">
+                      Target 220g
+                    </p>
+                  </div>
+                  <div className="bg-background-base p-3 rounded-xl border border-card-border/70 text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                      Lemak
+                    </p>
+                    <p className="text-sm font-black text-text-light mt-0.5">42g</p>
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
+                      Target 55g
+                    </p>
+                  </div>
+                </div>
+
+                {/* Recent Scanned Item Chip */}
+                <div className="mt-2 pt-4 border-t border-card-border/60 flex items-center justify-between text-xs bg-background-base/60 p-3 rounded-xl border border-card-border">
+                  <div className="flex items-center gap-2.5 truncate">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                      <ScanBarcode size={15} />
+                    </div>
+                    <div className="truncate">
+                      <p className="font-semibold text-text-light truncate">
+                        Susu Kedelai Sehat 200ml
+                      </p>
+                      <p className="text-[10px] text-text-muted">110 kkal • P 7g</p>
+                    </div>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                    Verified
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-background-dark">
+      {/* ── 2. Core Pillars / 4 Fitur Unggulan ── */}
+      <section className="py-16 lg:py-24 bg-background-dark/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-text-light mb-4">
-              Fitur Unggulan FitLife.id
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              Ekosistem Lengkap
+            </span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text-light mt-2 mb-4 tracking-tight">
+              Pilar Utama Gaya Hidup Sehat FitLife
             </h2>
-            <p className="text-text-muted text-lg">
-              Dapatkan semua yang anda butuhkan untuk mencapai tujuan kesehatan
-              anda
+            <p className="text-text-muted text-sm sm:text-base leading-relaxed">
+              Semua alat yang Anda butuhkan untuk mengatur nutrisi, memantau kalori,
+              dan menjaga kebugaran tubuh dalam satu wadah.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 - BMI */}
-            <div className="bg-card-dark rounded-2xl p-8 shadow-lg hover:shadow-primary/10 transition-all border border-card-border flex flex-col items-center text-center group hover:border-primary/50">
-              <div className="w-16 h-16 bg-background-base text-primary border border-card-border rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-[0_0_15px_rgba(0,255,127,0.2)]">
-                <Scale size={32} />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Pillar 1: BMI & BMR */}
+            <div className="bg-card-dark rounded-2xl p-6 border border-card-border hover:border-primary/50 transition-all flex flex-col group shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <Scale size={24} />
               </div>
-              <h3 className="text-xl font-bold text-text-light mb-3">
-                Kalkulator BMI
+              <h3 className="text-lg font-bold text-text-light mb-2">
+                Kalkulator BMI & BMR
               </h3>
-              <p className="text-text-muted mb-8 grow">
-                Hitung indeks massa tubuh anda dan dapatkan rekomendasi berat
-                badan ideal secara instan.
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-6 grow">
+                Hitung indeks massa tubuh, laju metabolisme basal, dan target kalori
+                harian sesuai intensitas aktivitas fisik Anda.
               </p>
               <Link
                 href="/kalkulator"
-                className="w-full bg-transparent border border-primary text-primary hover:bg-primary hover:text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 group/btn"
+                className="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-1.5 mt-auto pt-4 border-t border-card-border/60"
               >
-                Lihat Detail
-                <ChevronRight
-                  size={18}
-                  className="transition-transform group-hover/btn:translate-x-1"
-                />
+                <span>Cek BMI Sekarang</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
 
-            {/* Feature 2 - Menu */}
-            <div className="bg-card-dark rounded-2xl p-8 shadow-lg hover:shadow-primary/10 transition-all border border-card-border flex flex-col items-center text-center group hover:border-primary/50">
-              <div className="w-16 h-16 bg-background-base text-primary border border-card-border rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-[0_0_15px_rgba(0,255,127,0.2)]">
-                <Utensils size={32} />
+            {/* Pillar 2: Menu Sehat */}
+            <div className="bg-card-dark rounded-2xl p-6 border border-card-border hover:border-primary/50 transition-all flex flex-col group shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <Utensils size={24} />
               </div>
-              <h3 className="text-xl font-bold text-text-light mb-3">
-                Menu Sehat
+              <h3 className="text-lg font-bold text-text-light mb-2">
+                Menu Sehat & Biaya
               </h3>
-              <p className="text-text-muted mb-8 grow">
-                Temukan berbagai pilihan menu makanan sehat dan lezat yang
-                disesuaikan untuk diet anda.
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-6 grow">
+                Ratusan resep masakan seimbang dilengkapi takaran nutrisi makro dan
+                estimasi biaya belanja bahan terjangkau.
               </p>
               <Link
                 href="/menu"
-                className="w-full bg-transparent border border-primary text-primary hover:bg-primary hover:text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 group/btn"
+                className="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-1.5 mt-auto pt-4 border-t border-card-border/60"
               >
-                Lihat Detail
-                <ChevronRight
-                  size={18}
-                  className="transition-transform group-hover/btn:translate-x-1"
-                />
+                <span>Lihat Resep Sehat</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
 
-            {/* Feature 3 - Artikel */}
-            <div className="bg-card-dark rounded-2xl p-8 shadow-lg hover:shadow-primary/10 transition-all border border-card-border flex flex-col items-center text-center group hover:border-primary/50">
-              <div className="w-16 h-16 bg-background-base text-primary border border-card-border rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-[0_0_15px_rgba(0,255,127,0.2)]">
-                <BookOpen size={32} />
+            {/* Pillar 3: Scan Barcode */}
+            <div className="bg-card-dark rounded-2xl p-6 border border-card-border hover:border-primary/50 transition-all flex flex-col group shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <ScanBarcode size={24} />
               </div>
-              <h3 className="text-xl font-bold text-text-light mb-3">
-                Artikel
+              <h3 className="text-lg font-bold text-text-light mb-2">
+                Scan Barcode Makanan
               </h3>
-              <p className="text-text-muted mb-8 grow">
-                Baca artikel edukatif dan tips praktis seputar gaya hidup sehat
-                dan pola makan seimbang.
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-6 grow">
+                Pindai kemasan makanan saat berbelanja untuk mengetahui nilai
+                kalori, gula, dan status verifikasi gizi secara instan.
               </p>
               <Link
-                href="/artikel"
-                className="w-full bg-transparent border border-primary text-primary hover:bg-primary hover:text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 group/btn"
+                href="/scan-makanan"
+                className="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-1.5 mt-auto pt-4 border-t border-card-border/60"
               >
-                Lihat Detail
-                <ChevronRight
-                  size={18}
-                  className="transition-transform group-hover/btn:translate-x-1"
-                />
+                <span>Buka Pemindai</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            {/* Pillar 4: Lokasi Olahraga */}
+            <div className="bg-card-dark rounded-2xl p-6 border border-card-border hover:border-primary/50 transition-all flex flex-col group shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <MapPin size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-text-light mb-2">
+                Peta Lokasi Olahraga
+              </h3>
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-6 grow">
+                Temukan fasilitas gym, lapangan umum, dan taman terbuka di sekitar
+                Anda dengan rute navigasi akurat.
+              </p>
+              <Link
+                href="/lokasi"
+                className="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-1.5 mt-auto pt-4 border-t border-card-border/60"
+              >
+                <span>Cari Tempat Latihan</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Recent Content Section */}
+      {/* ── 3. Alur 3 Langkah Sederhana ── */}
+      <section className="py-14 sm:py-20 bg-background-base border-t border-card-border/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-text-light tracking-tight">
+              Bagaimana FitLife Membantu Anda?
+            </h2>
+            <p className="text-text-muted text-sm mt-2">
+              Tiga langkah terukur untuk membentuk kebiasaan hidup sehat tanpa beban.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 relative">
+            {/* Step 1 */}
+            <div className="bg-card-dark p-6 rounded-2xl border border-card-border relative">
+              <span className="text-4xl font-black text-primary/20 dark:text-primary/25 absolute top-5 right-5">
+                01
+              </span>
+              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-primary font-bold mb-4">
+                <Scale size={20} />
+              </div>
+              <h4 className="text-base font-bold text-text-light mb-2">
+                Ketahui Kondisi Fisik Anda
+              </h4>
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
+                Gunakan kalkulator BMI dan hitung kebutuhan kalori harian untuk
+                memahami target berat badan yang realistis dan aman.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-card-dark p-6 rounded-2xl border border-card-border relative">
+              <span className="text-4xl font-black text-primary/20 dark:text-primary/25 absolute top-5 right-5">
+                02
+              </span>
+              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-primary font-bold mb-4">
+                <Utensils size={20} />
+              </div>
+              <h4 className="text-base font-bold text-text-light mb-2">
+                Atur Menu & Cek Makanan
+              </h4>
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
+                Pilih menu diet sehat sesuai preferensi rasa, dan scan barcode
+                makanan sebelum dikonsumsi agar kalori tetap terkontrol.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-card-dark p-6 rounded-2xl border border-card-border relative">
+              <span className="text-4xl font-black text-primary/20 dark:text-primary/25 absolute top-5 right-5">
+                03
+              </span>
+              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-primary font-bold mb-4">
+                <CheckCircle2 size={20} />
+              </div>
+              <h4 className="text-base font-bold text-text-light mb-2">
+                Bangun Konsistensi Jangka Panjang
+              </h4>
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
+                Pantau perkembangan Anda, baca artikel edukasi gizi, dan jadikan
+                gaya hidup sehat sebagai rutinitas yang menyenangkan.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. Konten Pilihan Terbaru (Menu & Artikel) ── */}
       <HomeRecentContent />
 
-      {/* CTA Section */}
-      <section className="bg-linear-to-r from-card-dark to-background-dark border-t border-card-border py-20 relative overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 2px 2px, var(--color-primary) 1px, transparent 0)",
-            backgroundSize: "24px 24px",
-          }}
-        ></div>
-
+      {/* ── 5. Clean CTA Banner ── */}
+      <section className="py-16 sm:py-20 bg-background-dark/80 border-t border-card-border relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-text-light leading-tight">
-            Siap Memulai Perjalanan <br className="hidden md:block" /> Sehat
-            Anda?
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-4">
+            <Sparkles size={13} />
+            Mulai Hari Ini
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-4 text-text-light tracking-tight">
+            Siap Memulai Langkah Hidup Lebih Sehat?
           </h2>
-          <p className="text-lg md:text-xl text-text-muted mb-10 max-w-2xl mx-auto">
-            Bergabunglah dengan ribuan pengguna yang telah merasakan manfaat
-            hidup lebih sehat bersama FitLife.id.
+          <p className="text-sm sm:text-base text-text-muted mb-8 max-w-xl mx-auto leading-relaxed">
+            Tidak perlu diet ekstrem. Mulai dari mengetahui angka kebutuhan tubuh
+            Anda hari ini secara akurat dan gratis.
           </p>
-          <Link
-            href="kalkulator"
-            className="inline-flex items-center gap-3 bg-primary text-slate-800 hover:bg-primary-hover px-10 py-4 rounded-full font-bold text-lg shadow-[0_0_25px_rgba(0,255,127,0.5)] transition transform hover:scale-105"
-          >
-            <Scale size={22} />
-            Hitung BMI Sekarang
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/kalkulator"
+              className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-3.5 rounded-xl font-bold text-sm sm:text-base transition shadow-sm"
+            >
+              <Scale size={18} />
+              <span>Hitung BMI Saya Sekarang</span>
+            </Link>
+            <Link
+              href="/menu"
+              className="inline-flex items-center justify-center gap-2 bg-card-dark hover:bg-secondary/60 border border-card-border text-text-light px-8 py-3.5 rounded-xl font-semibold text-sm sm:text-base transition"
+            >
+              <span>Jelajahi Menu Sehat</span>
+            </Link>
+          </div>
         </div>
       </section>
     </>
