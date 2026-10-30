@@ -12,6 +12,7 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -21,8 +22,21 @@ export default function Navbar() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <nav className="sticky top-0 z-[1010] bg-background-base/90 backdrop-blur-md border-b border-card-border transition-colors duration-300">
+    <nav
+      className={`sticky top-0 z-[1010] transition-all duration-300 ${
+        scrolled
+          ? "bg-background-base backdrop-blur-md border-b border-card-border shadow-sm"
+          : "bg-background-base border-b border-transparent"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Brand Logo */}
