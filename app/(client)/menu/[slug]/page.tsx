@@ -37,24 +37,24 @@ const STATUS_CONFIG: Record<
   { color: string; bg: string; border: string }
 > = {
   Kurus: {
-    color: "text-blue-300",
-    bg: "bg-blue-500/20",
-    border: "border-blue-500/40",
+    color: "text-white",
+    bg: "bg-blue-600",
+    border: "border-blue-400",
   },
   Normal: {
-    color: "text-primary",
-    bg: "bg-primary/20",
-    border: "border-primary/40",
+    color: "text-[#042014]",
+    bg: "bg-primary",
+    border: "border-primary",
   },
   Berlebih: {
-    color: "text-yellow-300",
-    bg: "bg-yellow-500/20",
-    border: "border-yellow-500/40",
+    color: "text-[#1a1200]",
+    bg: "bg-amber-400",
+    border: "border-amber-300",
   },
   Obesitas: {
-    color: "text-red-300",
-    bg: "bg-red-500/20",
-    border: "border-red-500/40",
+    color: "text-white",
+    bg: "bg-red-600",
+    border: "border-red-400",
   },
 };
 
@@ -184,11 +184,11 @@ export default function MenuDetailPage() {
 
             {/* Top badges */}
             <div className="absolute top-4 left-4 flex items-center gap-2">
-              <span className="bg-primary text-background-dark text-[10px] font-black px-3 py-1 rounded-full tracking-wider flex items-center gap-1">
-                <Shield size={9} className="fill-background-dark" /> PREMIUM
+              <span className="bg-primary text-[#042014] text-[10px] font-black px-3 py-1.5 rounded-lg tracking-wider flex items-center gap-1.5 shadow-lg">
+                <Shield size={9} className="fill-[#042014]" /> PREMIUM
               </span>
               <span
-                className={`text-[10px] font-black px-3 py-1 rounded-full border ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}
+                className={`text-[10px] font-black px-3 py-1.5 rounded-lg border shadow-lg ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}
               >
                 {menu.target_status.toUpperCase()}
               </span>
@@ -204,17 +204,17 @@ export default function MenuDetailPage() {
             <div className="absolute bottom-0 left-0 right-0 px-6 pb-6 flex items-end justify-between">
               <div className="flex items-center gap-3">
                 {/* Kalori badge */}
-                <div className="flex items-center gap-2.5 bg-background-dark/80 backdrop-blur-sm border border-card-border rounded-2xl px-4 py-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
-                    <Flame size={16} className="text-orange-400" />
+                <div className="flex items-center gap-2.5 bg-[#071610]/90 backdrop-blur-md border border-[#10b981]/40 rounded-2xl px-4 py-2.5 shadow-lg">
+                  <div className="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
+                    <Flame size={16} className="text-white" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest leading-none mb-0.5">
-                      Kalori
+                    <p className="text-[10px] text-[#8fa89b] font-bold uppercase tracking-widest leading-none mb-0.5">
+                      KALORI
                     </p>
-                    <p className="text-base font-black text-text-light leading-none">
+                    <p className="text-base font-black text-[#f2f9f5] leading-none">
                       {menu.kalori}{" "}
-                      <span className="text-xs font-bold text-text-muted">
+                      <span className="text-xs font-bold text-[#8fa89b]">
                         kkal
                       </span>
                     </p>
@@ -222,17 +222,17 @@ export default function MenuDetailPage() {
                 </div>
 
                 {/* Waktu badge */}
-                <div className="flex items-center gap-2.5 bg-background-dark/80 backdrop-blur-sm border border-card-border rounded-2xl px-4 py-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                    <Clock size={16} className="text-primary" />
+                <div className="flex items-center gap-2.5 bg-[#071610]/90 backdrop-blur-md border border-[#10b981]/40 rounded-2xl px-4 py-2.5 shadow-lg">
+                  <div className="w-8 h-8 rounded-xl bg-[#10b981] flex items-center justify-center flex-shrink-0">
+                    <Clock size={16} className="text-[#042014]" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest leading-none mb-0.5">
-                      Waktu
+                    <p className="text-[10px] text-[#8fa89b] font-bold uppercase tracking-widest leading-none mb-0.5">
+                      WAKTU
                     </p>
-                    <p className="text-base font-black text-text-light leading-none">
+                    <p className="text-base font-black text-[#f2f9f5] leading-none">
                       {menu.waktu_memasak}{" "}
-                      <span className="text-xs font-bold text-text-muted">
+                      <span className="text-xs font-bold text-[#8fa89b]">
                         mnt
                       </span>
                     </p>
