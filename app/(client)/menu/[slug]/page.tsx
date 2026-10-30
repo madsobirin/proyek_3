@@ -38,22 +38,22 @@ const STATUS_CONFIG: Record<
 > = {
   Kurus: {
     color: "text-blue-300",
-    bg: "bg-blue-500/20",
+    bg: "bg-blue-500/70",
     border: "border-blue-500/40",
   },
   Normal: {
     color: "text-primary",
-    bg: "bg-primary/20",
+    bg: "bg-primary/70",
     border: "border-primary/40",
   },
   Berlebih: {
     color: "text-yellow-300",
-    bg: "bg-yellow-500/20",
+    bg: "bg-yellow-500/70",
     border: "border-yellow-500/40",
   },
   Obesitas: {
     color: "text-red-300",
-    bg: "bg-red-500/20",
+    bg: "bg-red-500/70",
     border: "border-red-500/40",
   },
 };
@@ -204,7 +204,7 @@ export default function MenuDetailPage() {
             <div className="absolute bottom-0 left-0 right-0 px-6 pb-6 flex items-end justify-between">
               <div className="flex items-center gap-3">
                 {/* Kalori badge */}
-                <div className="flex items-center gap-2.5 bg-background-dark/80 backdrop-blur-sm border border-card-border rounded-2xl px-4 py-2.5">
+                <div className="flex items-center gap-2.5 bg-background-dark/80 backdrop-blur-xl border border-card-border rounded-2xl px-4 py-2.5">
                   <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
                     <Flame size={16} className="text-orange-400" />
                   </div>
@@ -222,8 +222,8 @@ export default function MenuDetailPage() {
                 </div>
 
                 {/* Waktu badge */}
-                <div className="flex items-center gap-2.5 bg-background-dark/80 backdrop-blur-sm border border-card-border rounded-2xl px-4 py-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                <div className="flex items-center gap-2.5 bg-background-dark/80 backdrop-blur-xl border border-card-border rounded-2xl px-4 py-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-primary/50 border border-primary/30 flex items-center justify-center">
                     <Clock size={16} className="text-primary" />
                   </div>
                   <div>
