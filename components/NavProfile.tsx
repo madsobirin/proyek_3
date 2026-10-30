@@ -113,7 +113,7 @@ export default function NavProfile() {
   const AvatarImage = ({ size }: { size: number }) => (
     <div
       style={{ width: size, height: size }}
-      className="rounded-full overflow-hidden border-2 border-primary/40 flex items-center justify-center bg-primary/10 text-primary font-bold select-none shrink-0"
+      className="rounded-full overflow-hidden border-2 border-primary/40 flex items-center justify-center bg-card-dark text-primary font-bold select-none shrink-0"
     >
       {avatarSrc ? (
         <Image
@@ -154,7 +154,7 @@ export default function NavProfile() {
           <div className="absolute right-0 mt-3 w-58 rounded-2xl border border-card-border bg-card-dark shadow-xl z-50 overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
 
-            <div className="px-4 py-3.5 border-b border-card-border bg-background-base/40">
+            <div className="px-4 py-3.5 border-b border-card-border bg-card-dark">
               <div className="flex items-center gap-3">
                 <AvatarImage size={36} />
                 <div className="min-w-0">
@@ -177,7 +177,7 @@ export default function NavProfile() {
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-muted hover:text-text-light hover:bg-background-base/60 transition-colors group/item"
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-muted hover:text-text-light hover:bg-card-border/30 transition-colors group/item"
               >
                 <User
                   size={15}
@@ -189,7 +189,7 @@ export default function NavProfile() {
                 <Link
                   href="/admin/dashboard"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-muted hover:text-text-light hover:bg-background-base/60 transition-colors group/item"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-muted hover:text-text-light hover:bg-card-border/30 transition-colors group/item"
                 >
                   <ShieldCheck
                     size={15}

@@ -446,7 +446,7 @@ export default function ProfilePage() {
                   title="Klik atau drag foto untuk mengubah"
                 >
                   {/* Avatar image / initials */}
-                  <div className="w-full h-full flex items-center justify-center bg-background-base text-primary font-black text-2xl">
+                  <div className="w-full h-full flex items-center justify-center bg-card-dark text-primary font-black text-2xl">
                     {currentAvatar ? (
                       <Image
                         src={currentAvatar}
