@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import AuthLayout from "@/components/auth/authLayout";
 import SubmitButton from "@/components/auth/ui/button";
@@ -157,6 +157,17 @@ export default function ResetPasswordClient({ token }: Props) {
         animate="show"
         className="space-y-6"
       >
+        {/* Tombol Kembali ke Lupa Password */}
+        <motion.div variants={item} className="-mt-4">
+          <Link
+            href="/forgot-password"
+            className="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-emerald-600 transition font-medium group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            Kembali ke Lupa Kata Sandi
+          </Link>
+        </motion.div>
+
         {/* Password Baru */}
         <motion.div variants={item} className="space-y-2">
           <Label
@@ -267,10 +278,16 @@ export default function ResetPasswordClient({ token }: Props) {
           />
         </motion.div>
 
-        <motion.div variants={item} className="pt-2 text-center">
+        <motion.div variants={item} className="pt-2 flex flex-col items-center gap-2 text-center">
+          <Link
+            href="/forgot-password"
+            className="text-xs text-neutral-500 hover:text-emerald-600 transition font-medium"
+          >
+            Tautan kedaluwarsa? <span className="text-emerald-600 font-semibold underline">Kirim ulang permintaan</span>
+          </Link>
           <Link
             href="/login"
-            className="text-sm text-neutral-500 hover:text-neutral-800 transition font-medium"
+            className="text-xs text-neutral-400 hover:text-neutral-700 transition"
           >
             Batal dan kembali ke Login
           </Link>
