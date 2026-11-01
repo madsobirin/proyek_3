@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -208,6 +209,14 @@ export default function LoginClient({ registered }: { registered?: string }) {
                 {errors.password[0]}
               </p>
             )}
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors"
+              >
+                Lupa kata sandi?
+              </Link>
+            </div>
           </motion.div>
 
           {/* Submit Button */}

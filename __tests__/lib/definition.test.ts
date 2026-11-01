@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   SignupFormSchema,
   LoginFormSchema,
+  ForgotPasswordSchema,
+  ResetPasswordSchema,
   MenuSchema,
   ArtikelSchema,
 } from "@/lib/definition";
@@ -292,6 +294,59 @@ describe("ArtikelSchema", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.flatten().fieldErrors.kategori).toBeDefined();
+    }
+  });
+});
+
+// ─── ForgotPasswordSchema ─────────────────────────────────────────────────────
+describe("ForgotPasswordSchema", () => {
+  it("should pass with valid email", () => {
+    const result = ForgotPasswordSchema.safeParse({ email: "user@fitlife.id" });
+    expect(result.success).toBe(true);
+  });
+
+  it("should fail with invalid email format", () => {
+    const result = ForgotPasswordSchema.safeParse({ email: "invalid-email" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.email).toBeDefined();
+    }
+  });
+});
+
+// ─── ResetPasswordSchema ──────────────────────────────────────────────────────
+describe("ResetPasswordSchema", () => {
+  const validData = {
+    token: "valid-jwt-token-string",
+    password: "PasswordBaru123",
+  };
+
+  it("should pass with valid token and password", () => {
+    const result = ResetPasswordSchema.safeParse(validData);
+    expect(result.success).toBe(true);
+  });
+
+  it("should fail if token is empty", () => {
+    const result = ResetPasswordSchema.safeParse({ ...validData, token: "" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.token).toBeDefined();
+    }
+  });
+
+  it("should fail if password is shorter than 8 chars", () => {
+    const result = ResetPasswordSchema.safeParse({ ...validData, password: "Pass1" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.password).toBeDefined();
+    }
+  });
+
+  it("should fail if password contains no numbers", () => {
+    const result = ResetPasswordSchema.safeParse({ ...validData, password: "PasswordHanyaHuruf" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.password).toBeDefined();
     }
   });
 });
