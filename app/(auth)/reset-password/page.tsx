@@ -1,6 +1,7 @@
+import type { Metadata } from "next";
 import ResetPasswordClient from "./reset-password-client";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Atur Ulang Kata Sandi | FitLife",
   description: "Buat kata sandi baru untuk akun FitLife Anda",
 };
