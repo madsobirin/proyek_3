@@ -18,6 +18,20 @@ export const LoginFormSchema = z.object({
   password: z.string().min(1, { message: "Password harus diisi." }),
 });
 
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email({ message: "Format email tidak valid." }).trim(),
+});
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1, { message: "Token reset diperlukan." }),
+  password: z
+    .string()
+    .min(8, { message: "Password minimal 8 karakter." })
+    .regex(/[a-zA-Z]/, { message: "Harus mengandung huruf." })
+    .regex(/[0-9]/, { message: "Harus mengandung angka." })
+    .trim(),
+});
+
 // Menu Definisi nih
 export const MenuSchema = z.object({
   nama_menu: z
