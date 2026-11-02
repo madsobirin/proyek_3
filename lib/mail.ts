@@ -12,14 +12,26 @@ type SendResetPasswordEmailParams = {
  */
 function createTransporter() {
   const host = process.env.SMTP_HOST || "smtp.gmail.com";
-  const port = Number(process.env.SMTP_PORT) || 587;
-  const secure = process.env.SMTP_SECURE === "true" || port === 465;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
   if (!user || !pass) {
     return null;
   }
+
+  // Jika menggunakan Gmail, konfigurasi service: 'gmail' lebih stabil dan otomatis menggunakan port 465 SSL
+  if (host === "smtp.gmail.com" || host.includes("gmail")) {
+    return nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user,
+        pass,
+      },
+    });
+  }
+
+  const port = Number(process.env.SMTP_PORT) || 587;
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
 
   return nodemailer.createTransport({
     host,
