@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import AuthLayout from "@/components/auth/authLayout";
 import SubmitButton from "@/components/auth/ui/button";
 import { toast } from "sonner";
 import { MailCheck, ArrowLeft, RefreshCw } from "lucide-react";
+import { ReCaptcha, ReCaptchaRef } from "@/components/auth/ReCaptcha";
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -29,6 +30,8 @@ const item: Variants = {
 
 export default function ForgotPasswordClient() {
   const [email, setEmail] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCaptchaRef>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -42,12 +45,14 @@ export default function ForgotPasswordClient() {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, captchaToken }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
+        recaptchaRef.current?.reset();
+        setCaptchaToken(null);
         if (result.errors?.email) {
           setError(result.errors.email[0]);
         } else {
@@ -159,6 +164,15 @@ export default function ForgotPasswordClient() {
             {error && (
               <p className="text-xs text-red-500 font-medium">{error}</p>
             )}
+          </motion.div>
+
+          {/* reCAPTCHA v2 */}
+          <motion.div variants={item}>
+            <ReCaptcha
+              ref={recaptchaRef}
+              onVerify={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+            />
           </motion.div>
 
           <motion.div variants={item}>

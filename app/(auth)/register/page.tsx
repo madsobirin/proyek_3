@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import AuthLayout from "@/components/auth/authLayout";
 import SubmitButton from "@/components/auth/ui/button";
 import { toast } from "sonner"; // Pakai sonner agar konsisten dengan login
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+import { ReCaptcha, ReCaptchaRef } from "@/components/auth/ReCaptcha";
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -83,6 +84,8 @@ export default function RegisterPage() {
     email: "",
     password: "",
   });
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCaptchaRef>(null);
 
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -98,12 +101,14 @@ export default function RegisterPage() {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, captchaToken }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
+        recaptchaRef.current?.reset();
+        setCaptchaToken(null);
         if (result.errors) {
           setErrors(result.errors);
         } else {
@@ -210,6 +215,15 @@ export default function RegisterPage() {
             {errors.password && (
               <p className="text-xs text-red-500">{errors.password[0]}</p>
             )}
+          </motion.div>
+
+          {/* reCAPTCHA v2 */}
+          <motion.div variants={item}>
+            <ReCaptcha
+              ref={recaptchaRef}
+              onVerify={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+            />
           </motion.div>
 
           {/* Submit */}
