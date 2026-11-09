@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ForgotPasswordSchema } from "@/lib/definition";
+import { verifyRecaptcha } from "@/lib/recaptcha";
 import { createPasswordResetToken } from "@/lib/token";
 import { sendResetPasswordEmail } from "@/lib/mail";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    const captcha = await verifyRecaptcha(body.captchaToken);
+    if (!captcha.success) {
+      return NextResponse.json(
+        { message: captcha.message || "Verifikasi reCAPTCHA gagal." },
+        { status: 400 },
+      );
+    }
 
     const validatedFields = ForgotPasswordSchema.safeParse(body);
     if (!validatedFields.success) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import AuthLayout from "@/components/auth/authLayout";
 import SubmitButton from "@/components/auth/ui/button";
 import { toast } from "sonner";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+import { ReCaptcha, ReCaptchaRef } from "@/components/auth/ReCaptcha";
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -85,6 +86,8 @@ function GoogleAuthButton() {
 export default function LoginClient({ registered }: { registered?: string }) {
   const router = useRouter();
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCaptchaRef>(null);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -99,12 +102,14 @@ export default function LoginClient({ registered }: { registered?: string }) {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, captchaToken }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
+        recaptchaRef.current?.reset();
+        setCaptchaToken(null);
         if (result.errors) {
           setErrors(result.errors);
         } else {
@@ -217,6 +222,15 @@ export default function LoginClient({ registered }: { registered?: string }) {
                 Lupa kata sandi?
               </Link>
             </div>
+          </motion.div>
+
+          {/* reCAPTCHA v2 */}
+          <motion.div variants={item}>
+            <ReCaptcha
+              ref={recaptchaRef}
+              onVerify={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+            />
           </motion.div>
 
           {/* Submit Button */}

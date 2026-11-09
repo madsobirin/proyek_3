@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SignupFormSchema } from "@/lib/definition";
+import { verifyRecaptcha } from "@/lib/recaptcha";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 
@@ -9,6 +10,14 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    const captcha = await verifyRecaptcha(body.captchaToken);
+    if (!captcha.success) {
+      return NextResponse.json(
+        { message: captcha.message || "Verifikasi reCAPTCHA gagal." },
+        { status: 400 },
+      );
+    }
 
     const validatedFields = SignupFormSchema.safeParse(body);
     if (!validatedFields.success) {
