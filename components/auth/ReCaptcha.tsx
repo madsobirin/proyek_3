@@ -39,22 +39,18 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
   ({ onVerify, onExpire, onError, theme = "light", className = "" }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const widgetIdRef = useRef<number | null>(null);
-    const isRenderedRef = useRef(false);
+    const callbacksRef = useRef({ onVerify, onExpire, onError });
+
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
-    // Simpan callback di ref agar tidak memicu re-render useEffect saat inline function berubah
-    const callbacksRef = useRef({ onVerify, onExpire, onError });
+    // Update callbacks without recreating the widget.
     useEffect(() => {
       callbacksRef.current = { onVerify, onExpire, onError };
     }, [onVerify, onExpire, onError]);
 
     useImperativeHandle(ref, () => ({
       reset: () => {
-        if (
-          widgetIdRef.current !== null &&
-          typeof window !== "undefined" &&
-          window.grecaptcha
-        ) {
+        if (widgetIdRef.current !== null && window.grecaptcha) {
           try {
             window.grecaptcha.reset(widgetIdRef.current);
           } catch (err) {
@@ -62,61 +58,85 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
           }
         }
       },
+
       getResponse: () => {
-        if (
-          widgetIdRef.current !== null &&
-          typeof window !== "undefined" &&
-          window.grecaptcha
-        ) {
+        if (widgetIdRef.current !== null && window.grecaptcha) {
           try {
             return window.grecaptcha.getResponse(widgetIdRef.current);
           } catch {
             return "";
           }
         }
+
         return "";
       },
     }));
 
     useEffect(() => {
-      if (!siteKey || !containerRef.current) return;
-      if (isRenderedRef.current) return;
+      const key = siteKey;
+
+      if (!key || !containerRef.current) return;
 
       let isMounted = true;
       let interval: ReturnType<typeof setInterval> | undefined;
 
+      // Each effect execution owns its own widget.
+      let currentWidgetId: number | null = null;
+
       function renderWidget() {
-        if (!containerRef.current || !window.grecaptcha || !isMounted) return;
-        if (isRenderedRef.current) return;
+        if (
+          !isMounted ||
+          !containerRef.current ||
+          !window.grecaptcha ||
+          currentWidgetId !== null
+        ) {
+          return;
+        }
 
         try {
-          containerRef.current.innerHTML = "";
           const target = document.createElement("div");
           containerRef.current.appendChild(target);
 
           const id = window.grecaptcha.render(target, {
-            sitekey: siteKey,
+            sitekey: key as string,
             theme,
+
             callback: (token: string) => {
-              if (isMounted) callbacksRef.current.onVerify(token);
+              if (isMounted) {
+                callbacksRef.current.onVerify(token);
+              }
             },
+
             "expired-callback": () => {
-              if (isMounted) callbacksRef.current.onExpire?.();
+              if (isMounted) {
+                callbacksRef.current.onExpire?.();
+              }
             },
+
             "error-callback": () => {
-              if (isMounted) callbacksRef.current.onError?.();
+              if (isMounted) {
+                callbacksRef.current.onError?.();
+              }
             },
           });
 
+          currentWidgetId = id;
           widgetIdRef.current = id;
-          isRenderedRef.current = true;
         } catch (err) {
           console.error("[RECAPTCHA_RENDER_ERROR]:", err);
         }
       }
 
+      function waitForScript() {
+        if (!isMounted || !window.grecaptcha) return;
+
+        window.grecaptcha.ready(() => {
+          if (isMounted) renderWidget();
+        });
+      }
+
       if (window.grecaptcha?.render) {
-        window.grecaptcha.ready(renderWidget);
+        waitForScript();
       } else {
         const existingScript = document.getElementById(
           "google-recaptcha-script",
@@ -124,15 +144,18 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
 
         if (!existingScript) {
           const script = document.createElement("script");
+
           script.id = "google-recaptcha-script";
           script.src =
             "https://www.google.com/recaptcha/api.js?render=explicit";
           script.async = true;
           script.defer = true;
 
-          script.onload = () => {
-            if (window.grecaptcha) {
-              window.grecaptcha.ready(renderWidget);
+          script.onload = waitForScript;
+
+          script.onerror = () => {
+            if (isMounted) {
+              callbacksRef.current.onError?.();
             }
           };
 
@@ -140,22 +163,39 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
         } else {
           interval = setInterval(() => {
             if (window.grecaptcha?.render) {
-              clearInterval(interval);
-              interval = undefined;
+              if (interval !== undefined) {
+                clearInterval(interval);
+                interval = undefined;
+              }
 
-              window.grecaptcha.ready(renderWidget);
+              waitForScript();
             }
           }, 100);
         }
       }
 
-      // Satu cleanup untuk semua jalur eksekusi
       return () => {
         isMounted = false;
 
         if (interval !== undefined) {
           clearInterval(interval);
           interval = undefined;
+        }
+
+        if (currentWidgetId !== null && window.grecaptcha) {
+          try {
+            window.grecaptcha.reset(currentWidgetId);
+          } catch (err) {
+            console.error("[RECAPTCHA_CLEANUP_ERROR]:", err);
+          }
+        }
+
+        if (widgetIdRef.current === currentWidgetId) {
+          widgetIdRef.current = null;
+        }
+
+        if (containerRef.current) {
+          containerRef.current.innerHTML = "";
         }
       };
     }, [siteKey, theme]);
@@ -169,6 +209,7 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
           </div>
         );
       }
+
       return null;
     }
 

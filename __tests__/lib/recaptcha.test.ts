@@ -3,6 +3,9 @@ import { verifyRecaptcha } from "@/lib/recaptcha";
 
 describe("verifyRecaptcha", () => {
   const originalEnv = process.env;
+  const setNodeEnv = (val: string) => {
+    (process.env as Record<string, string | undefined>).NODE_ENV = val;
+  };
 
   beforeEach(() => {
     vi.resetModules();
@@ -15,23 +18,24 @@ describe("verifyRecaptcha", () => {
   });
 
   it("should bypass and return success if NODE_ENV is test", async () => {
-    process.env.NODE_ENV = "test";
+    setNodeEnv("test");
     process.env.RECAPTCHA_SECRET_KEY = "dummy-secret";
 
     const result = await verifyRecaptcha(null);
     expect(result.success).toBe(true);
   });
 
-  it("should bypass and return success if RECAPTCHA_SECRET_KEY is empty", async () => {
-    process.env.NODE_ENV = "production";
+  it("should throw error if RECAPTCHA_SECRET_KEY is empty in non-test env", async () => {
+    setNodeEnv("production");
     delete process.env.RECAPTCHA_SECRET_KEY;
 
-    const result = await verifyRecaptcha(null);
-    expect(result.success).toBe(true);
+    await expect(verifyRecaptcha(null)).rejects.toThrow(
+      "RECAPTCHA_SECRET_KEY is not configured"
+    );
   });
 
   it("should fail if secret key is present but token is missing", async () => {
-    process.env.NODE_ENV = "production";
+    setNodeEnv("production");
     process.env.RECAPTCHA_SECRET_KEY = "secret-key-123";
 
     const result = await verifyRecaptcha(null);
@@ -40,7 +44,7 @@ describe("verifyRecaptcha", () => {
   });
 
   it("should return success when Google returns success: true", async () => {
-    process.env.NODE_ENV = "production";
+    setNodeEnv("production");
     process.env.RECAPTCHA_SECRET_KEY = "secret-key-123";
 
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
@@ -53,7 +57,7 @@ describe("verifyRecaptcha", () => {
   });
 
   it("should return failure when Google returns success: false", async () => {
-    process.env.NODE_ENV = "production";
+    setNodeEnv("production");
     process.env.RECAPTCHA_SECRET_KEY = "secret-key-123";
 
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
@@ -67,7 +71,7 @@ describe("verifyRecaptcha", () => {
   });
 
   it("should handle network failure gracefully", async () => {
-    process.env.NODE_ENV = "production";
+    setNodeEnv("production");
     process.env.RECAPTCHA_SECRET_KEY = "secret-key-123";
 
     vi.spyOn(global, "fetch").mockRejectedValueOnce(new Error("Network offline"));
