@@ -2,13 +2,17 @@
  * Helper verifikasi Google reCAPTCHA v2 server-side.
  */
 export async function verifyRecaptcha(
-  token?: string | null
+  token?: string | null,
 ): Promise<{ success: boolean; message?: string }> {
   const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
   // Jika environment test atau secret key belum dikonfigurasi, bypass agar tidak memblokir dev/test
-  if (process.env.NODE_ENV === "test" || !secretKey) {
+  if (process.env.NODE_ENV === "test") {
     return { success: true };
+  }
+
+  if (!secretKey) {
+    throw new Error("RECAPTCHA_SECRET_KEY is not configured");
   }
 
   if (!token) {
@@ -24,13 +28,16 @@ export async function verifyRecaptcha(
       response: token,
     });
 
-    const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+    const response = await fetch(
+      "https://www.google.com/recaptcha/api/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params.toString(),
       },
-      body: params.toString(),
-    });
+    );
 
     if (!response.ok) {
       return {
@@ -44,7 +51,8 @@ export async function verifyRecaptcha(
     if (!data.success) {
       return {
         success: false,
-        message: "Verifikasi reCAPTCHA tidak valid atau kedaluwarsa. Silakan centang ulang.",
+        message:
+          "Verifikasi reCAPTCHA tidak valid atau kedaluwarsa. Silakan centang ulang.",
       };
     }
 

@@ -27,7 +27,7 @@ declare global {
           callback?: (response: string) => void;
           "expired-callback"?: () => void;
           "error-callback"?: () => void;
-        }
+        },
       ) => number;
       reset: (opt_widget_id?: number) => void;
       getResponse: (opt_widget_id?: number) => string;
@@ -83,6 +83,7 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
       if (isRenderedRef.current) return;
 
       let isMounted = true;
+      let interval: ReturnType<typeof setInterval> | undefined;
 
       function renderWidget() {
         if (!containerRef.current || !window.grecaptcha || !isMounted) return;
@@ -97,13 +98,13 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
             sitekey: siteKey,
             theme,
             callback: (token: string) => {
-              callbacksRef.current.onVerify(token);
+              if (isMounted) callbacksRef.current.onVerify(token);
             },
             "expired-callback": () => {
-              callbacksRef.current.onExpire?.();
+              if (isMounted) callbacksRef.current.onExpire?.();
             },
             "error-callback": () => {
-              callbacksRef.current.onError?.();
+              if (isMounted) callbacksRef.current.onError?.();
             },
           });
 
@@ -114,35 +115,48 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
         }
       }
 
-      if (window.grecaptcha && window.grecaptcha.render) {
+      if (window.grecaptcha?.render) {
         window.grecaptcha.ready(renderWidget);
       } else {
-        const existingScript = document.getElementById("google-recaptcha-script");
+        const existingScript = document.getElementById(
+          "google-recaptcha-script",
+        );
+
         if (!existingScript) {
           const script = document.createElement("script");
           script.id = "google-recaptcha-script";
-          script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
+          script.src =
+            "https://www.google.com/recaptcha/api.js?render=explicit";
           script.async = true;
           script.defer = true;
+
           script.onload = () => {
             if (window.grecaptcha) {
               window.grecaptcha.ready(renderWidget);
             }
           };
+
           document.head.appendChild(script);
         } else {
-          const interval = setInterval(() => {
-            if (window.grecaptcha && window.grecaptcha.render) {
+          interval = setInterval(() => {
+            if (window.grecaptcha?.render) {
               clearInterval(interval);
+              interval = undefined;
+
               window.grecaptcha.ready(renderWidget);
             }
           }, 100);
-          return () => clearInterval(interval);
         }
       }
 
+      // Satu cleanup untuk semua jalur eksekusi
       return () => {
         isMounted = false;
+
+        if (interval !== undefined) {
+          clearInterval(interval);
+          interval = undefined;
+        }
       };
     }, [siteKey, theme]);
 
@@ -150,7 +164,8 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
       if (process.env.NODE_ENV === "development") {
         return (
           <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-700 text-center">
-            <strong>Dev Notice:</strong> NEXT_PUBLIC_RECAPTCHA_SITE_KEY belum diisi. reCAPTCHA v2 nonaktif sementara.
+            <strong>Dev Notice:</strong> NEXT_PUBLIC_RECAPTCHA_SITE_KEY belum
+            diisi. reCAPTCHA v2 nonaktif sementara.
           </div>
         );
       }
@@ -162,7 +177,7 @@ export const ReCaptcha = forwardRef<ReCaptchaRef, ReCaptchaProps>(
         <div ref={containerRef} className="min-h-[78px]" />
       </div>
     );
-  }
+  },
 );
 
 ReCaptcha.displayName = "ReCaptcha";
